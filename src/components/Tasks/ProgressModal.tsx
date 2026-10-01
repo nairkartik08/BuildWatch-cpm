@@ -17,11 +17,19 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
   statusDay,
   onUpdate,
 }) => {
-  if (!isOpen || !task) return null;
+  const [percent, setPercent] = useState<number>(task?.percentComplete ?? 0);
+  const [actualStart, setActualStart] = useState<number | undefined>(task?.actualStart ?? statusDay);
+  const [actualFinish, setActualFinish] = useState<number | undefined>(task?.actualFinish);
 
-  const [percent, setPercent] = useState<number>(task.percentComplete);
-  const [actualStart, setActualStart] = useState<number | undefined>(task.actualStart ?? statusDay);
-  const [actualFinish, setActualFinish] = useState<number | undefined>(task.actualFinish);
+  React.useEffect(() => {
+    if (task) {
+      setPercent(task.percentComplete);
+      setActualStart(task.actualStart ?? statusDay);
+      setActualFinish(task.actualFinish);
+    }
+  }, [task, statusDay, isOpen]);
+
+  if (!isOpen || !task) return null;
 
   const handlePercentChange = (newVal: number) => {
     setPercent(newVal);

@@ -14,13 +14,13 @@ export const TaskCommentsModal: React.FC<TaskCommentsModalProps> = ({
   onClose,
   task,
 }) => {
-  if (!isOpen || !task) return null;
-
   const { comments, addComment, currentUserRole, setUserRole } = useProjectStore();
   const [content, setContent] = useState('');
   const [authorName, setAuthorName] = useState(
     currentUserRole === 'manager' ? 'Site Superintendent' : 'Lead Trade Foreman'
   );
+
+  if (!isOpen || !task) return null;
 
   const taskComments = comments.filter((c) => c.taskId === task.id);
 
