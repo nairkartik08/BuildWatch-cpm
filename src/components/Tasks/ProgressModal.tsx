@@ -51,24 +51,24 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#121926] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 font-sans">
+      <div className="bg-[#141c2b] border border-[#232f44] rounded-md w-full max-w-md shadow-xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-4 px-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+        <div className="p-4 px-6 border-b border-[#232f44] flex items-center justify-between bg-[#0f172a]">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-blue-500/10 text-[#4da3ff]">
+            <span className="p-1.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
               <Clock className="w-4 h-4" />
             </span>
             <div>
               <h3 className="font-bold text-white text-sm">Update Task Progress</h3>
-              <p className="text-[11px] text-[#8e9ab0]">
-                Contractor site logs & completion tracking.
+              <p className="text-[11px] text-slate-400">
+                Log percentage completion and actual start/finish offsets.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-[#8e9ab0] hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+            className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800"
           >
             <X className="w-4 h-4" />
           </button>
@@ -76,14 +76,14 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+          <div className="p-3 rounded bg-[#0f172a] border border-[#232f44]">
             <div className="text-xs font-bold text-white mb-0.5">{task.name}</div>
-            <div className="text-[11px] text-[#8e9ab0] flex items-center gap-2">
+            <div className="text-[11px] text-slate-400 flex items-center gap-2 font-mono">
               <span>{task.trade}</span>
               <span>•</span>
               <span>{task.site}</span>
               <span>•</span>
-              <span className="font-mono">Planned: {task.durationLikely}d</span>
+              <span>Planned: {task.durationLikely}d</span>
             </div>
           </div>
 
@@ -100,9 +100,9 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
               step={5}
               value={percent}
               onChange={(e) => handlePercentChange(parseInt(e.target.value))}
-              className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-[#4da3ff]"
+              className="w-full h-2 bg-slate-800 rounded appearance-none cursor-pointer accent-blue-500"
             />
-            <div className="flex justify-between text-[10px] text-slate-500 mt-1">
+            <div className="flex justify-between text-[10px] text-slate-500 mt-1 font-mono">
               <span>0% (Not Started)</span>
               <span>50%</span>
               <span>100% (Completed)</span>
@@ -116,10 +116,10 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
                 key={p}
                 type="button"
                 onClick={() => handlePercentChange(p)}
-                className={`flex-1 py-1 text-[11px] font-mono rounded-lg border transition-all ${
+                className={`flex-1 py-1 text-[11px] font-mono rounded border transition-colors cursor-pointer ${
                   percent === p
-                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/40 font-bold'
-                    : 'bg-white/5 text-[#8e9ab0] border-white/10 hover:text-white'
+                    ? 'bg-blue-600 text-white font-bold border-blue-500'
+                    : 'bg-[#0f172a] text-slate-400 border-[#232f44] hover:text-white'
                 }`}
               >
                 {p}%
@@ -142,7 +142,7 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
                 onChange={(e) =>
                   setActualStart(e.target.value ? parseInt(e.target.value) : undefined)
                 }
-                className="w-full bg-[#0b0f16] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#4da3ff]"
+                className="w-full bg-[#0f172a] border border-[#232f44] rounded px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-mono"
               />
             </div>
 
@@ -160,23 +160,23 @@ export const ProgressModal: React.FC<ProgressModalProps> = ({
                 onChange={(e) =>
                   setActualFinish(e.target.value ? parseInt(e.target.value) : undefined)
                 }
-                className="w-full bg-[#0b0f16] border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-[#4da3ff] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-[#0f172a] border border-[#232f44] rounded px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed font-mono"
               />
             </div>
           </div>
 
           {/* Modal Actions */}
-          <div className="flex items-center justify-end gap-2 pt-3">
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#232f44]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[#8e9ab0] hover:text-white bg-white/5 border border-white/10"
+              className="px-4 py-2 rounded text-xs font-semibold text-slate-400 hover:text-white bg-[#0f172a] border border-[#232f44]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold bg-[#4da3ff] text-black shadow-lg shadow-blue-500/20 hover:opacity-90 transition-opacity"
+              className="px-4 py-2 rounded text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-colors cursor-pointer"
             >
               Save Progress
             </button>

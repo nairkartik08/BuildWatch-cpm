@@ -5,7 +5,6 @@ import {
   X,
   AlertTriangle,
   TrendingDown,
-  Sparkles,
   ArrowRight,
   ShieldCheck,
 } from 'lucide-react';
@@ -82,24 +81,24 @@ export const AddDelayModal: React.FC<AddDelayModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#121926] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 font-sans">
+      <div className="bg-[#141c2b] border border-[#232f44] rounded-md w-full max-w-lg shadow-xl overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-4 px-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+        <div className="p-4 px-6 border-b border-[#232f44] flex items-center justify-between bg-[#0f172a]">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-red-500/10 text-[#ff4d4d]">
+            <span className="p-1.5 rounded bg-red-500/10 text-red-400 border border-red-500/30">
               <AlertTriangle className="w-4 h-4" />
             </span>
             <div>
-              <h3 className="font-bold text-white text-sm">Simulate & Log Delay Event</h3>
-              <p className="text-[11px] text-[#8e9ab0]">
-                Live forward/backward pass recalculates project slip before applying.
+              <h3 className="font-bold text-white text-sm">Log Delay Event</h3>
+              <p className="text-[11px] text-slate-400">
+                Calculates schedule variance and critical path impact before applying.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-[#8e9ab0] hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+            className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800"
           >
             <X className="w-4 h-4" />
           </button>
@@ -110,12 +109,12 @@ export const AddDelayModal: React.FC<AddDelayModalProps> = ({
           {/* Target Task Select */}
           <div>
             <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-              Select Target Task or Material Delivery
+              Target Task or Material Arrival
             </label>
             <select
               value={selectedTaskId}
               onChange={(e) => setSelectedTaskId(e.target.value)}
-              className="w-full bg-[#0b0f16] border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-[#ffb020]"
+              className="w-full bg-[#0f172a] border border-[#232f44] rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
             >
               {tasks.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -139,9 +138,9 @@ export const AddDelayModal: React.FC<AddDelayModalProps> = ({
                   max={45}
                   value={delayDays}
                   onChange={(e) => setDelayDays(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full bg-[#0b0f16] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ffb020] font-mono text-center font-bold"
+                  className="w-full bg-[#0f172a] border border-[#232f44] rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 font-mono text-center font-bold"
                 />
-                <span className="text-xs text-[#8e9ab0]">days</span>
+                <span className="text-xs text-slate-400">days</span>
               </div>
             </div>
 
@@ -152,12 +151,12 @@ export const AddDelayModal: React.FC<AddDelayModalProps> = ({
               <select
                 value={cause}
                 onChange={(e) => setCause(e.target.value as DelayCause)}
-                className="w-full bg-[#0b0f16] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#ffb020]"
+                className="w-full bg-[#0f172a] border border-[#232f44] rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500"
               >
                 <option value="delivery">Material / Delivery</option>
-                <option value="weather">Weather / Environment</option>
-                <option value="resource">Crew / Resource Shortage</option>
-                <option value="other">Other / Site Issue</option>
+                <option value="weather">Weather Delay</option>
+                <option value="resource">Crew / Subcontractor</option>
+                <option value="other">Other Site Issue</option>
               </select>
             </div>
           </div>
@@ -169,32 +168,31 @@ export const AddDelayModal: React.FC<AddDelayModalProps> = ({
             </label>
             <input
               type="text"
-              placeholder="e.g. Heavy rain flooded basement pit; batching plant outage..."
+              placeholder="e.g. Weather disruption, supplier delay, design clarification..."
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full bg-[#0b0f16] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#ffb020] placeholder-slate-600"
+              className="w-full bg-[#0f172a] border border-[#232f44] rounded px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500 placeholder-slate-500"
             />
           </div>
 
           {/* Live Preview Card */}
           {preview && (
             <div
-              className={`p-4 rounded-xl border transition-all ${
+              className={`p-3.5 rounded border ${
                 preview.absorbedByFloat
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                   : 'bg-red-500/10 border-red-500/30 text-red-300'
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Live Schedule Impact Preview
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider">
+                  Schedule Impact Preview
                 </span>
                 <span className="text-xs font-mono font-bold">
                   {preview.netProjectSlip > 0 ? (
-                    <span className="text-[#ff4d4d]">+{preview.netProjectSlip}d Project Slip</span>
+                    <span className="text-red-400">+{preview.netProjectSlip}d Project Slip</span>
                   ) : (
-                    <span className="text-[#35d07f]">0d Project Slip (Safe)</span>
+                    <span className="text-emerald-400">0d Project Slip (Absorbed)</span>
                   )}
                 </span>
               </div>
@@ -210,23 +208,23 @@ export const AddDelayModal: React.FC<AddDelayModalProps> = ({
 
                 <div className="text-[11px]">
                   {preview.absorbedByFloat ? (
-                    <span className="flex items-center gap-1 text-[#35d07f]">
+                    <span className="flex items-center gap-1 text-emerald-400">
                       <ShieldCheck className="w-3.5 h-3.5" />
-                      Absorbed by task float ({preview.floatRemaining}d remaining).
+                      Absorbed by task float ({preview.floatRemaining}d float remaining).
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-[#ff4d4d]">
+                    <span className="flex items-center gap-1 text-red-400">
                       <TrendingDown className="w-3.5 h-3.5" />
-                      Pushes project completion past deadline!
+                      Pushes project finish past target deadline!
                     </span>
                   )}
                 </div>
               </div>
 
               {preview.switchedCriticalPath && (
-                <div className="mt-2 pt-2 border-t border-red-500/20 text-[11px] text-[#ffb020] flex items-center gap-1.5 font-medium">
+                <div className="mt-2 pt-2 border-t border-red-500/20 text-[11px] text-amber-400 flex items-center gap-1.5 font-medium">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  Warning: Injected delay switches the project's critical path!
+                  Warning: Injected delay shifts the critical path!
                 </div>
               )}
             </div>
@@ -237,15 +235,15 @@ export const AddDelayModal: React.FC<AddDelayModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-[#8e9ab0] hover:text-white bg-white/5 border border-white/10"
+              className="px-4 py-2 rounded text-xs font-semibold text-slate-400 hover:text-white bg-[#0f172a] border border-[#232f44]"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-[#ffb020] to-[#ff4d4d] text-black shadow-lg shadow-red-500/20 hover:opacity-90 transition-opacity"
+              className="px-4 py-2 rounded text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white transition-colors cursor-pointer"
             >
-              Apply Delay
+              Log Delay
             </button>
           </div>
         </form>

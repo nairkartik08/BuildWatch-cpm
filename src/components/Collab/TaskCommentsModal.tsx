@@ -38,42 +38,42 @@ export const TaskCommentsModal: React.FC<TaskCommentsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-[#121926] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 font-sans">
+      <div className="bg-[#141c2b] border border-[#232f44] rounded-md w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
         {/* Header */}
-        <div className="p-4 px-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+        <div className="p-4 px-6 border-b border-[#232f44] flex items-center justify-between bg-[#0f172a]">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-amber-500/10 text-[#ffb020]">
+            <span className="p-1.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
               <MessageSquare className="w-4 h-4" />
             </span>
             <div>
-              <h3 className="font-bold text-white text-sm">Task Collaboration & Field Notes</h3>
-              <p className="text-[11px] text-[#8e9ab0]">
+              <h3 className="font-bold text-white text-sm">Site Log & Field Notes</h3>
+              <p className="text-[11px] text-slate-400">
                 {task.name} ({task.trade})
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-[#8e9ab0] hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+            className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Role Switcher Toolbar */}
-        <div className="p-3 px-6 bg-black/30 border-b border-white/5 flex items-center justify-between text-xs">
-          <span className="text-[#8e9ab0]">Active Role Persona:</span>
-          <div className="flex items-center bg-white/5 p-0.5 rounded-xl border border-white/10">
+        <div className="p-3 px-6 bg-[#0f172a] border-b border-[#232f44] flex items-center justify-between text-xs">
+          <span className="text-slate-400">Active Role Persona:</span>
+          <div className="flex items-center bg-[#141c2b] p-0.5 rounded border border-[#232f44]">
             <button
               onClick={() => {
                 setUserRole('manager');
                 setAuthorName('Site Superintendent');
               }}
-              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 font-medium transition-all ${
+              className={`px-3 py-1 rounded flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${
                 currentUserRole === 'manager'
-                  ? 'bg-amber-500 text-black font-bold shadow'
-                  : 'text-[#8e9ab0] hover:text-white'
+                  ? 'bg-amber-600 text-white font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <Shield className="w-3.5 h-3.5" />
@@ -84,10 +84,10 @@ export const TaskCommentsModal: React.FC<TaskCommentsModalProps> = ({
                 setUserRole('contractor');
                 setAuthorName('Lead Trade Foreman');
               }}
-              className={`px-3 py-1 rounded-lg flex items-center gap-1.5 font-medium transition-all ${
+              className={`px-3 py-1 rounded flex items-center gap-1.5 font-medium transition-colors cursor-pointer ${
                 currentUserRole === 'contractor'
-                  ? 'bg-blue-500 text-black font-bold shadow'
-                  : 'text-[#8e9ab0] hover:text-white'
+                  ? 'bg-blue-600 text-white font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <HardHat className="w-3.5 h-3.5" />
@@ -97,10 +97,10 @@ export const TaskCommentsModal: React.FC<TaskCommentsModalProps> = ({
         </div>
 
         {/* Comments Feed */}
-        <div className="p-6 flex-1 overflow-y-auto space-y-3">
+        <div className="p-6 flex-1 overflow-y-auto space-y-3 bg-[#141c2b]">
           {taskComments.length === 0 ? (
-            <div className="text-center py-8 text-xs text-[#8e9ab0] italic">
-              No field notes logged for this task yet. Post the first update below!
+            <div className="text-center py-8 text-xs text-slate-400 italic">
+              No field notes logged for this task yet. Post the first site note below.
             </div>
           ) : (
             taskComments.map((cm) => {
@@ -108,7 +108,7 @@ export const TaskCommentsModal: React.FC<TaskCommentsModalProps> = ({
               return (
                 <div
                   key={cm.id}
-                  className={`p-3 rounded-xl border ${
+                  className={`p-3 rounded border ${
                     isManager
                       ? 'bg-amber-500/5 border-amber-500/20'
                       : 'bg-blue-500/5 border-blue-500/20'
@@ -117,16 +117,16 @@ export const TaskCommentsModal: React.FC<TaskCommentsModalProps> = ({
                   <div className="flex items-center justify-between text-xs mb-1">
                     <div className="flex items-center gap-1.5 font-semibold text-white">
                       {isManager ? (
-                        <Shield className="w-3.5 h-3.5 text-[#ffb020]" />
+                        <Shield className="w-3.5 h-3.5 text-amber-400" />
                       ) : (
-                        <HardHat className="w-3.5 h-3.5 text-[#4da3ff]" />
+                        <HardHat className="w-3.5 h-3.5 text-blue-400" />
                       )}
                       <span>{cm.author}</span>
                       <span
                         className={`text-[9px] px-1.5 py-0.2 rounded font-mono ${
                           isManager
-                            ? 'bg-amber-500/20 text-[#ffb020]'
-                            : 'bg-blue-500/20 text-[#4da3ff]'
+                            ? 'bg-amber-500/20 text-amber-400'
+                            : 'bg-blue-500/20 text-blue-400'
                         }`}
                       >
                         {isManager ? 'MANAGEMENT' : 'TRADE CREW'}
@@ -147,21 +147,21 @@ export const TaskCommentsModal: React.FC<TaskCommentsModalProps> = ({
         </div>
 
         {/* Post Form */}
-        <form onSubmit={handlePost} className="p-4 border-t border-white/10 bg-white/[0.02]">
+        <form onSubmit={handlePost} className="p-4 border-t border-[#232f44] bg-[#0f172a]">
           <div className="flex gap-2">
             <input
               type="text"
-              placeholder={`Post field note as ${authorName}...`}
+              placeholder={`Post site note as ${authorName}...`}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="flex-1 bg-[#0b0f16] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#ffb020]"
+              className="flex-1 bg-[#141c2b] border border-[#232f44] rounded px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
             />
             <button
               type="submit"
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#ffb020] text-black hover:bg-amber-400 flex items-center gap-1.5 transition-colors shadow-md"
+              className="px-4 py-2 rounded text-xs font-bold bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1.5 transition-colors cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
-              Post
+              Post Note
             </button>
           </div>
         </form>
