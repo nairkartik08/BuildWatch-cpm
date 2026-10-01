@@ -69,7 +69,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   const dayArray = useMemo(() => Array.from({ length: totalDays }, (_, i) => i), [totalDays]);
 
   const rowHeight = 36;
-  const headerHeight = 52;
+  const headerHeight = 44;
   const chartWidth = totalDays * zoomLevel;
 
   // Task Y-coordinate mapping for dependency arrow rendering
@@ -80,62 +80,62 @@ export const GanttChart: React.FC<GanttChartProps> = ({
   }, [visibleTasks]);
 
   return (
-    <div className="flex flex-col h-full bg-[#0d121c] border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative">
+    <div className="flex flex-col h-full bg-[#141c2b] border border-[#232f44] rounded-md overflow-hidden shadow-sm relative font-sans">
       {/* Control Toolbar */}
-      <div className="p-3 px-4 bg-[#121823]/90 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="p-2.5 px-4 bg-[#0f172a] border-b border-[#232f44] flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
           <span className="font-bold text-white flex items-center gap-1.5">
-            <Calendar className="w-4 h-4 text-[#ffb020]" />
-            Gantt Radar Timeline
+            <Calendar className="w-4 h-4 text-blue-400" />
+            Project Schedule Timeline
           </span>
-          <span className="text-[#8e9ab0]">({visibleTasks.length} tasks visible)</span>
+          <span className="text-slate-400">({visibleTasks.length} tasks)</span>
         </div>
 
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Trade Filter */}
-          <div className="flex items-center gap-1.5 bg-[#0b0f16] border border-white/10 rounded-xl px-2.5 py-1">
-            <Layers className="w-3.5 h-3.5 text-[#8e9ab0]" />
+          <div className="flex items-center gap-1.5 bg-[#141c2b] border border-[#232f44] rounded px-2 py-1">
+            <Layers className="w-3.5 h-3.5 text-slate-400" />
             <select
               value={selectedTrade}
               onChange={(e) => setSelectedTrade(e.target.value)}
-              className="bg-transparent text-slate-200 focus:outline-none text-xs"
+              className="bg-transparent text-slate-200 focus:outline-none text-xs cursor-pointer"
             >
-              <option value="all" className="bg-[#0b0f16]">All Trades</option>
+              <option value="all" className="bg-[#0f172a]">All Trades</option>
               {trades.map((tr) => (
-                <option key={tr} value={tr} className="bg-[#0b0f16]">{tr}</option>
+                <option key={tr} value={tr} className="bg-[#0f172a]">{tr}</option>
               ))}
             </select>
           </div>
 
-          {/* Mode Pill Buttons */}
-          <div className="flex items-center bg-[#0b0f16] border border-white/10 rounded-xl p-0.5">
+          {/* Mode Buttons */}
+          <div className="flex items-center bg-[#141c2b] border border-[#232f44] rounded p-0.5">
             <button
               onClick={() => setFilterMode('all')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
                 filterMode === 'all'
-                  ? 'bg-white/10 text-white font-bold'
-                  : 'text-[#8e9ab0] hover:text-white'
+                  ? 'bg-blue-600 text-white font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               All Tasks
             </button>
             <button
               onClick={() => setFilterMode('critical')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
                 filterMode === 'critical'
-                  ? 'bg-red-500/20 text-[#ff4d4d] border border-red-500/30 font-bold'
-                  : 'text-[#8e9ab0] hover:text-white'
+                  ? 'bg-red-600 text-white font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Critical Only
             </button>
             <button
               onClick={() => setFilterMode('delivery')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
                 filterMode === 'delivery'
-                  ? 'bg-blue-500/20 text-[#4da3ff] border border-blue-500/30 font-bold'
-                  : 'text-[#8e9ab0] hover:text-white'
+                  ? 'bg-blue-600 text-white font-bold'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Deliveries
@@ -145,20 +145,20 @@ export const GanttChart: React.FC<GanttChartProps> = ({
           {/* Toggle Predecessor Links */}
           <button
             onClick={() => setShowDependencies(!showDependencies)}
-            className={`px-2.5 py-1 rounded-xl border transition-all ${
+            className={`px-2.5 py-1 rounded text-[11px] font-medium border transition-colors cursor-pointer ${
               showDependencies
-                ? 'bg-amber-500/10 text-[#ffb020] border-amber-500/30'
-                : 'bg-[#0b0f16] text-[#8e9ab0] border-white/10'
+                ? 'bg-slate-800 text-blue-400 border-slate-700'
+                : 'bg-[#141c2b] text-slate-400 border-[#232f44]'
             }`}
           >
-            Links {showDependencies ? 'ON' : 'OFF'}
+            Dependencies: {showDependencies ? 'ON' : 'OFF'}
           </button>
 
           {/* Zoom controls */}
-          <div className="flex items-center gap-1 bg-[#0b0f16] border border-white/10 rounded-xl p-0.5">
+          <div className="flex items-center gap-1 bg-[#141c2b] border border-[#232f44] rounded p-0.5">
             <button
               onClick={() => setZoomLevel((z) => Math.max(16, z - 4))}
-              className="p-1 hover:text-white text-[#8e9ab0]"
+              className="p-1 hover:text-white text-slate-400 cursor-pointer"
               title="Zoom out"
             >
               <ZoomOut className="w-3.5 h-3.5" />
@@ -166,7 +166,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             <span className="text-[11px] px-1 font-mono text-slate-300">{zoomLevel}px</span>
             <button
               onClick={() => setZoomLevel((z) => Math.min(48, z + 4))}
-              className="p-1 hover:text-white text-[#8e9ab0]"
+              className="p-1 hover:text-white text-slate-400 cursor-pointer"
               title="Zoom in"
             >
               <ZoomIn className="w-3.5 h-3.5" />
@@ -178,18 +178,18 @@ export const GanttChart: React.FC<GanttChartProps> = ({
       {/* Main Gantt Split Container */}
       <div className="flex-1 flex overflow-hidden relative">
         {/* Left Side: Fixed Task Name & Trade Column */}
-        <div className="w-64 md:w-72 bg-[#0d121c] border-r border-white/10 flex flex-col shrink-0 z-20 shadow-xl">
+        <div className="w-64 md:w-72 bg-[#141c2b] border-r border-[#232f44] flex flex-col shrink-0 z-20 shadow-md">
           {/* Table Header */}
           <div
-            className="border-b border-white/10 px-4 flex items-center justify-between text-[#8e9ab0] uppercase font-bold text-[10px] tracking-wider shrink-0 bg-[#121823]"
+            className="border-b border-[#232f44] px-4 flex items-center justify-between text-slate-400 uppercase font-bold text-[10px] tracking-wider shrink-0 bg-[#0f172a]"
             style={{ height: headerHeight }}
           >
-            <span>Task Name / Phase</span>
+            <span>Task Name / Description</span>
             <span>Trade</span>
           </div>
 
           {/* Task rows */}
-          <div className="overflow-y-auto flex-1 divide-y divide-white/5">
+          <div className="overflow-y-auto flex-1 divide-y divide-[#232f44]">
             {visibleTasks.map((task) => {
               const res = cpmResult.tasks[task.id];
               const isSelected = selectedTaskId === task.id;
@@ -201,19 +201,19 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                   style={{ height: rowHeight }}
                   className={`px-4 flex items-center justify-between cursor-pointer transition-colors ${
                     isSelected
-                      ? 'bg-[#ffb020]/20 text-white'
-                      : 'hover:bg-white/[0.03] text-slate-300'
+                      ? 'bg-blue-600/20 text-white font-bold'
+                      : 'hover:bg-slate-800/60 text-slate-300'
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate pr-2">
                     {res?.critical && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#ff4d4d] shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                     )}
                     <span className="truncate text-xs font-medium">
                       {task.name.replace('📦 Material Arrival: ', '📦 ')}
                     </span>
                   </div>
-                  <span className="text-[10px] text-[#8e9ab0] font-mono shrink-0">
+                  <span className="text-[10px] text-slate-400 font-mono shrink-0">
                     {task.trade.split(' ')[0]}
                   </span>
                 </div>
@@ -224,10 +224,10 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
         {/* Right Side: Scrollable Timeline Grid */}
         <div className="flex-1 overflow-auto relative">
-          <div style={{ width: chartWidth, minHeight: '100%' }} className="relative bg-[#0b0f16]">
+          <div style={{ width: chartWidth, minHeight: '100%' }} className="relative bg-[#0c1017]">
             {/* Timeline Header (Days & Dates) */}
             <div
-              className="sticky top-0 bg-[#121823] border-b border-white/10 z-10 flex divide-x divide-white/5"
+              className="sticky top-0 bg-[#0f172a] border-b border-[#232f44] z-10 flex divide-x divide-[#232f44]"
               style={{ height: headerHeight }}
             >
               {dayArray.map((day) => {
@@ -240,14 +240,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                     style={{ width: zoomLevel }}
                     className={`shrink-0 flex flex-col items-center justify-center text-[10px] ${
                       isStatusDay
-                        ? 'bg-blue-500/15 text-blue-400 font-bold'
+                        ? 'bg-blue-500/10 text-blue-400 font-bold'
                         : isTargetDeadline
-                        ? 'bg-red-500/15 text-red-400 font-bold'
-                        : 'text-[#8e9ab0]'
+                        ? 'bg-red-500/10 text-red-400 font-bold'
+                        : 'text-slate-400'
                     }`}
                   >
                     <span>d{day}</span>
-                    <span className="text-[9px] text-slate-500">
+                    <span className="text-[9px] text-slate-500 font-mono">
                       {offsetToDate(projectStartDate, day, 'd')}
                     </span>
                   </div>
@@ -257,21 +257,21 @@ export const GanttChart: React.FC<GanttChartProps> = ({
 
             {/* Vertical Marker: Today / Status Day */}
             <div
-              className="absolute top-0 bottom-0 pointer-events-none border-l-2 border-[#4da3ff] z-20"
+              className="absolute top-0 bottom-0 pointer-events-none border-l-2 border-blue-500 z-20"
               style={{ left: statusDay * zoomLevel + zoomLevel / 2 }}
             >
-              <div className="sticky top-1 ml-1 px-1.5 py-0.5 rounded bg-[#4da3ff] text-black text-[9px] font-bold shadow-md">
+              <div className="sticky top-1 ml-1 px-1.5 py-0.5 rounded bg-blue-600 text-white text-[9px] font-bold shadow">
                 Today (Day {statusDay})
               </div>
             </div>
 
             {/* Vertical Marker: Target Deadline */}
             <div
-              className="absolute top-0 bottom-0 pointer-events-none border-l-2 border-dashed border-[#ff4d4d] z-20"
+              className="absolute top-0 bottom-0 pointer-events-none border-l-2 border-dashed border-red-500 z-20"
               style={{ left: targetDeadline * zoomLevel + zoomLevel / 2 }}
             >
-              <div className="sticky top-1 ml-1 px-1.5 py-0.5 rounded bg-[#ff4d4d] text-white text-[9px] font-bold shadow-md">
-                Target Deadline (Day {targetDeadline})
+              <div className="sticky top-1 ml-1 px-1.5 py-0.5 rounded bg-red-600 text-white text-[9px] font-bold shadow">
+                Target (Day {targetDeadline})
               </div>
             </div>
 
@@ -290,7 +290,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                     refY="3"
                     orient="auto"
                   >
-                    <polygon points="0 0, 6 3, 0 6" fill="rgba(255, 176, 32, 0.6)" />
+                    <polygon points="0 0, 6 3, 0 6" fill="#94a3b8" />
                   </marker>
                 </defs>
                 {visibleTasks.map((task) => {
@@ -320,7 +320,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         key={`${predId}->${task.id}`}
                         d={`M ${predX} ${predY} L ${midX} ${predY} L ${midX} ${targetY} L ${targetX} ${targetY}`}
                         fill="none"
-                        stroke="rgba(255, 176, 32, 0.4)"
+                        stroke="#475569"
                         strokeWidth="1.5"
                         strokeDasharray={targetRes.critical && predRes.critical ? 'none' : '3 3'}
                         markerEnd="url(#arrowhead)"
@@ -332,7 +332,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({
             )}
 
             {/* Task Bar Rows */}
-            <div className="divide-y divide-white/5 relative z-10">
+            <div className="divide-y divide-[#232f44] relative z-10">
               {visibleTasks.map((task) => {
                 const res = cpmResult.tasks[task.id];
                 if (!res) return null;
@@ -343,10 +343,10 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                 const width = durationDays * zoomLevel;
 
                 // Color code
-                let barColor = 'bg-[#35d07f]';
-                if (res.critical) barColor = 'bg-[#ff4d4d]';
-                else if (res.nearCritical) barColor = 'bg-[#ffb020]';
-                else if (task.isDelivery) barColor = 'bg-[#4da3ff]';
+                let barColor = 'bg-emerald-600';
+                if (res.critical) barColor = 'bg-red-600';
+                else if (res.nearCritical) barColor = 'bg-amber-600';
+                else if (task.isDelivery) barColor = 'bg-blue-600';
 
                 return (
                   <div
@@ -363,10 +363,10 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                     }}
                     onMouseLeave={() => setHoveredTask(null)}
                   >
-                    {/* Free float indicator line (slack) */}
+                    {/* Free float line */}
                     {res.float > 0 && !res.critical && (
                       <div
-                        className="absolute h-1 bg-white/10 rounded-full border-t border-b border-dashed border-white/20 pointer-events-none"
+                        className="absolute h-1 border-t border-b border-dashed border-slate-600 pointer-events-none"
                         style={{
                           left: left + width,
                           width: res.float * zoomLevel,
@@ -384,26 +384,25 @@ export const GanttChart: React.FC<GanttChartProps> = ({
                         width,
                         height: 20,
                       }}
-                      className={`absolute rounded-md cursor-pointer transition-all duration-300 flex items-center justify-between px-2 text-[10px] font-bold text-black shadow-md ${barColor} ${
+                      className={`absolute rounded cursor-pointer transition-all flex items-center justify-between px-2 text-[10px] font-bold text-white shadow-sm ${barColor} ${
                         isSelected
-                          ? 'ring-2 ring-white shadow-[0_0_15px_rgba(255,255,255,0.4)]'
+                          ? 'ring-2 ring-white'
                           : 'hover:brightness-110'
                       }`}
                     >
-                      {/* Percent complete fill overlay */}
+                      {/* Percent complete overlay */}
                       {task.percentComplete > 0 && (
                         <div
-                          className="absolute inset-0 bg-black/25 rounded-md pointer-events-none overflow-hidden"
+                          className="absolute inset-0 bg-black/20 rounded pointer-events-none overflow-hidden"
                           style={{ width: `${task.percentComplete}%` }}
                         />
                       )}
 
-                      <span className="relative z-10 truncate text-[9px] drop-shadow-sm font-semibold">
-                        {task.isDelivery ? 'Milestone' : `${task.name}`}
+                      <span className="relative z-10 truncate text-[9px] font-semibold">
+                        {task.isDelivery ? 'Delivery' : `${task.name}`}
                       </span>
 
-                      {/* Float / Critical badge */}
-                      <span className="relative z-10 font-mono text-[9px] ml-1 opacity-90">
+                      <span className="relative z-10 font-mono text-[9px] ml-1">
                         {res.critical ? '0d' : `+${res.float}f`}
                       </span>
                     </div>
@@ -415,66 +414,39 @@ export const GanttChart: React.FC<GanttChartProps> = ({
         </div>
       </div>
 
-      {/* Floating Detailed Tooltip */}
+      {/* Hover Tooltip */}
       {hoveredTask && (
-        <div className="absolute bottom-4 right-4 z-40 bg-[#121926]/95 border border-white/15 rounded-xl p-3 shadow-2xl backdrop-blur-md max-w-sm pointer-events-none animate-in fade-in duration-200">
-          <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2 mb-2">
+        <div className="absolute bottom-4 right-4 z-40 bg-[#0f172a] border border-[#232f44] rounded-md p-3 shadow-lg max-w-sm pointer-events-none font-sans">
+          <div className="flex items-center justify-between gap-2 border-b border-[#232f44] pb-2 mb-2">
             <span className="font-bold text-white text-xs truncate">
               {hoveredTask.task.name}
             </span>
             <span
-              className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${
+              className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
                 cpmResult.tasks[hoveredTask.task.id]?.critical
-                  ? 'bg-red-500/20 text-[#ff4d4d] border border-red-500/30'
-                  : 'bg-emerald-500/20 text-[#35d07f] border border-emerald-500/30'
+                  ? 'bg-red-500/10 text-red-400 border border-red-500/30'
+                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
               }`}
             >
-              {cpmResult.tasks[hoveredTask.task.id]?.critical ? 'CRITICAL' : 'BUFFERED'}
+              {cpmResult.tasks[hoveredTask.task.id]?.critical ? 'CRITICAL (0 FLOAT)' : 'BUFFERED'}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px] text-[#8e9ab0]">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-slate-400">
+            <div>Trade: <strong className="text-white">{hoveredTask.task.trade}</strong></div>
             <div>
-              <span>Trade: </span>
-              <strong className="text-white">{hoveredTask.task.trade}</strong>
-            </div>
-            <div>
-              <span>Contractor: </span>
-              <strong className="text-white">
+              Contractor: <strong className="text-white">
                 {hoveredTask.task.contractorId
                   ? contractorMap.get(hoveredTask.task.contractorId)?.name || 'Assigned'
                   : 'In-house'}
               </strong>
             </div>
+            <div>Progress: <strong className="text-blue-400 font-mono">{hoveredTask.task.percentComplete}%</strong></div>
             <div>
-              <span>Location: </span>
-              <strong className="text-white">{hoveredTask.task.site}</strong>
+              Total Float: <strong className="text-amber-400 font-mono">{cpmResult.tasks[hoveredTask.task.id]?.float} Days</strong>
             </div>
-            <div>
-              <span>Progress: </span>
-              <strong className="text-blue-400 font-mono">
-                {hoveredTask.task.percentComplete}%
-              </strong>
-            </div>
-            <div>
-              <span>Earliest (ES → EF): </span>
-              <strong className="text-white font-mono">
-                Day {cpmResult.tasks[hoveredTask.task.id]?.es} →{' '}
-                {cpmResult.tasks[hoveredTask.task.id]?.ef}
-              </strong>
-            </div>
-            <div>
-              <span>Latest (LS → LF): </span>
-              <strong className="text-white font-mono">
-                Day {cpmResult.tasks[hoveredTask.task.id]?.ls} →{' '}
-                {cpmResult.tasks[hoveredTask.task.id]?.lf}
-              </strong>
-            </div>
-            <div className="col-span-2">
-              <span>Total Float / Slack: </span>
-              <strong className="text-amber-400 font-mono">
-                {cpmResult.tasks[hoveredTask.task.id]?.float} Days
-              </strong>
+            <div className="col-span-2 font-mono text-slate-300">
+              Planned: Day {cpmResult.tasks[hoveredTask.task.id]?.es} → Day {cpmResult.tasks[hoveredTask.task.id]?.ef}
             </div>
           </div>
         </div>
