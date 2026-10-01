@@ -6,49 +6,50 @@ import {
   GitFork,
   CheckSquare,
   FileBarChart2,
-  Radio,
+  HardHat,
   ArrowLeft,
+  Activity,
 } from 'lucide-react';
 import { GlobalSearchBar } from './GlobalSearchBar';
 import { AlertsPanel } from '../Collab/AlertsPanel';
 
 const navItems = [
   { to: '/app', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/app/schedule', label: 'Schedule (Gantt)', icon: CalendarDays },
-  { to: '/app/graph', label: 'Dependency Graph', icon: GitFork },
-  { to: '/app/tasks', label: 'Tasks & Delays', icon: CheckSquare },
-  { to: '/app/report', label: 'Executive Report', icon: FileBarChart2 },
+  { to: '/app/schedule', label: 'Master Schedule', icon: CalendarDays },
+  { to: '/app/graph', label: 'Network Diagram', icon: GitFork },
+  { to: '/app/tasks', label: 'Task Management', icon: CheckSquare },
+  { to: '/app/report', label: 'Project Report', icon: FileBarChart2 },
 ];
 
 export const Layout: React.FC = () => {
   const location = useLocation();
 
   return (
-    <div className="flex h-screen w-full bg-[#0b0f16] text-[#e9edf3] overflow-hidden">
+    <div className="flex h-screen w-full bg-[#0c1017] text-[#f1f5f9] overflow-hidden font-sans">
       {/* Sidebar */}
-      <aside className="w-64 border-r border-white/10 bg-[#0d121c]/95 flex flex-col shrink-0 z-20">
+      <aside className="w-64 border-r border-[#232f44] bg-[#141c2b] flex flex-col shrink-0 z-20">
         {/* Brand */}
-        <div className="h-16 px-5 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 font-bold tracking-tight text-sm">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff4d4d] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#ff4d4d]"></span>
+        <div className="h-16 px-5 border-b border-[#232f44] flex items-center justify-between bg-[#0f172a]">
+          <div className="flex items-center gap-2.5 font-bold tracking-tight text-sm text-white">
+            <span className="p-1.5 rounded bg-blue-600/20 border border-blue-500/30 text-blue-400">
+              <HardHat className="w-4 h-4" />
             </span>
-            <span className="bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent font-black tracking-wide">
-              CRITICAL PATH RADAR
-            </span>
+            <div className="flex flex-col">
+              <span className="font-bold tracking-wide text-white leading-tight">BUILDWATCH CPM</span>
+              <span className="text-[10px] text-slate-400 font-normal">Construction Project Manager</span>
+            </div>
           </div>
         </div>
 
         {/* Project Selector / Status badge */}
-        <div className="p-4 border-b border-white/5 bg-[#121823]/50">
-          <div className="flex items-center justify-between text-xs text-[#9aa6b8] mb-1">
-            <span>Hospital Wing B</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ff4d4d]/20 text-[#ff4d4d] border border-[#ff4d4d]/30">
-              LIVE RADAR
+        <div className="p-4 border-b border-[#232f44] bg-[#0f172a]/60">
+          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span className="font-semibold text-slate-200">Hospital Wing B</span>
+            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              ACTIVE PROJECT
             </span>
           </div>
-          <div className="text-xs font-medium text-slate-300">Phase 1: Foundation to Envelope</div>
+          <div className="text-xs text-slate-400">Phase 1: Foundation to Envelope</div>
         </div>
 
         {/* Navigation Links */}
@@ -63,13 +64,13 @@ export const Layout: React.FC = () => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-md text-xs font-semibold transition-colors ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#ffb020]/20 to-[#ff4d4d]/20 text-[#ffb020] border border-[#ffb020]/40 shadow-sm shadow-[#ffb020]/10'
-                    : 'text-[#9aa6b8] hover:text-white hover:bg-white/5 border border-transparent'
+                    ? 'bg-blue-600 text-white font-bold'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#ffb020]' : 'text-[#9aa6b8]'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
                 <span>{item.label}</span>
               </NavLink>
             );
@@ -77,48 +78,48 @@ export const Layout: React.FC = () => {
         </nav>
 
         {/* Footer / Landing switch */}
-        <div className="p-3 border-t border-white/10 space-y-2">
+        <div className="p-3 border-t border-[#232f44] space-y-2 bg-[#0f172a]">
           <NavLink
             to="/"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-[#9aa6b8] hover:text-white hover:bg-white/5 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 rounded text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to 3D Landing</span>
+            <span>Project Landing View</span>
           </NavLink>
-          <div className="px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5 text-[11px] text-[#9aa6b8] flex items-center justify-between">
+          <div className="px-3 py-2 rounded bg-slate-900 border border-[#232f44] text-[11px] text-slate-400 flex items-center justify-between">
             <span className="flex items-center gap-1.5">
-              <Radio className="w-3 h-3 text-[#35d07f] animate-pulse" />
-              Engine Online
+              <Activity className="w-3.5 h-3.5 text-emerald-400" />
+              CPM Engine Active
             </span>
-            <span className="font-mono text-[10px] text-slate-400">v0.1</span>
+            <span className="font-mono text-[10px] text-slate-400">v1.0</span>
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-[#0b0f16]">
+      <main className="flex-1 flex flex-col overflow-hidden bg-[#0c1017]">
         {/* Top Header */}
-        <header className="h-16 px-6 border-b border-white/10 flex items-center justify-between bg-[#0d121c]/60 backdrop-blur-md shrink-0">
+        <header className="h-16 px-6 border-b border-[#232f44] flex items-center justify-between bg-[#141c2b] shrink-0">
           <div className="flex items-center gap-3">
-            <h1 className="text-sm font-semibold tracking-wide text-white capitalize">
+            <h1 className="text-sm font-bold tracking-tight text-white capitalize">
               {location.pathname === '/app'
-                ? 'Project Overview & Critical Delay Risks'
+                ? 'Project Schedule & Critical Path Overview'
                 : location.pathname.replace('/app/', '').replace('-', ' ') + ' View'}
             </h1>
           </div>
           <div className="flex items-center gap-3">
             <GlobalSearchBar />
             <AlertsPanel />
-            <div className="flex items-center gap-2 bg-[#121823] border border-white/10 px-3 py-1.5 rounded-lg text-xs">
-              <span className="w-2 h-2 rounded-full bg-[#35d07f]" />
-              <span className="text-[#9aa6b8]">Day Offset:</span>
+            <div className="flex items-center gap-2 bg-[#0f172a] border border-[#232f44] px-3 py-1.5 rounded text-xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-slate-400">Status Date:</span>
               <span className="font-bold text-white">Day 12 (Today)</span>
             </div>
           </div>
         </header>
 
         {/* View body */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-6 bg-[#0c1017]">
           <Outlet />
         </div>
       </main>

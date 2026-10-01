@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useProjectStore } from '../../store';
-import { Search, Package, HardHat, CircleAlert, CheckSquare, X } from 'lucide-react';
+import { Search, Package, HardHat, AlertTriangle, CheckSquare, X } from 'lucide-react';
 
 export const GlobalSearchBar: React.FC = () => {
   const navigate = useNavigate();
@@ -140,11 +140,11 @@ export const GlobalSearchBar: React.FC = () => {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 bg-[#121823] border border-white/10 hover:border-white/20 px-3 py-1.5 rounded-xl text-xs text-[#8e9ab0] hover:text-white transition-all shadow-sm cursor-pointer"
+        className="flex items-center gap-2 bg-[#0f172a] border border-[#232f44] hover:border-slate-600 px-3 py-1.5 rounded text-xs text-slate-400 hover:text-white transition-colors cursor-pointer"
       >
-        <Search className="w-3.5 h-3.5 text-[#ffb020]" />
-        <span className="hidden sm:inline">Search anything...</span>
-        <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-black/40 border border-white/10 text-[10px] font-mono text-slate-400">
+        <Search className="w-3.5 h-3.5 text-slate-400" />
+        <span className="hidden sm:inline">Search project items...</span>
+        <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-400">
           ⌘K
         </kbd>
       </button>
@@ -153,69 +153,69 @@ export const GlobalSearchBar: React.FC = () => {
       {isOpen &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] flex items-start justify-center pt-20 p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150"
+            className="fixed inset-0 z-[9999] flex items-start justify-center pt-20 p-4 bg-slate-950/80"
             onClick={() => setIsOpen(false)}
           >
             <div
-              className="bg-[#121926] border border-white/20 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col z-[10000]"
+              className="bg-[#141c2b] border border-[#232f44] rounded-lg w-full max-w-xl shadow-xl overflow-hidden flex flex-col z-[10000]"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Input Bar */}
-              <div className="p-4 px-5 border-b border-white/10 flex items-center gap-3 bg-[#0d121c]">
-                <Search className="w-5 h-5 text-[#ffb020] shrink-0" />
+              <div className="p-4 px-5 border-b border-[#232f44] flex items-center gap-3 bg-[#0f172a]">
+                <Search className="w-4 h-4 text-blue-400 shrink-0" />
                 <input
                   ref={inputRef}
                   type="text"
-                  placeholder="Type to search tasks, deliveries, contractors, delays..."
+                  placeholder="Search tasks, materials, contractors, delays..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-0 border-0 outline-none"
+                  className="w-full bg-transparent text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-0 border-0 outline-none"
                 />
                 {query && (
                   <button
                     type="button"
                     onClick={() => setQuery('')}
-                    className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-white/5"
+                    className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
                 <kbd
                   onClick={() => setIsOpen(false)}
-                  className="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-slate-400 border border-white/10 cursor-pointer hover:bg-white/10 hover:text-white"
+                  className="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700 cursor-pointer hover:bg-slate-700 hover:text-white"
                 >
                   ESC
                 </kbd>
               </div>
 
               {/* Results list */}
-              <div className="p-2 max-h-96 overflow-y-auto divide-y divide-white/5 bg-[#121926]">
+              <div className="p-2 max-h-96 overflow-y-auto divide-y divide-[#232f44] bg-[#141c2b]">
                 {results.length > 0 ? (
                   results.map((hit) => {
                     let Icon = CheckSquare;
                     if (hit.category === 'Delivery') Icon = Package;
                     else if (hit.category === 'Contractor') Icon = HardHat;
-                    else if (hit.category === 'Delay') Icon = CircleAlert;
+                    else if (hit.category === 'Delay') Icon = AlertTriangle;
 
                     return (
                       <div
                         key={hit.id}
                         onClick={hit.action}
-                        className="p-3 rounded-xl hover:bg-white/[0.06] cursor-pointer transition-colors flex items-center gap-3 group"
+                        className="p-3 rounded hover:bg-slate-800/80 cursor-pointer transition-colors flex items-center gap-3 group"
                       >
-                        <div className="p-2 rounded-lg bg-white/5 text-[#ffb020] group-hover:scale-105 transition-transform shrink-0">
+                        <div className="p-2 rounded bg-slate-800 text-blue-400 shrink-0">
                           <Icon className="w-4 h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-white text-xs truncate group-hover:text-[#ffb020] transition-colors">
+                            <span className="font-semibold text-white text-xs truncate group-hover:text-blue-400 transition-colors">
                               {hit.title}
                             </span>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300 font-mono">
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-mono border border-slate-700">
                               {hit.category}
                             </span>
                           </div>
-                          <div className="text-[11px] text-[#8e9ab0] truncate mt-0.5">
+                          <div className="text-[11px] text-slate-400 truncate mt-0.5">
                             {hit.subtitle}
                           </div>
                         </div>
@@ -223,12 +223,12 @@ export const GlobalSearchBar: React.FC = () => {
                     );
                   })
                 ) : query.trim() ? (
-                  <div className="p-8 text-center text-xs text-[#8e9ab0]">
-                    No matching tasks, deliveries, or contractors found for "{query}".
+                  <div className="p-8 text-center text-xs text-slate-400">
+                    No matching items found for "{query}".
                   </div>
                 ) : (
-                  <div className="p-6 text-center text-xs text-[#8e9ab0]">
-                    Type to search across 35+ tasks, 6 deliveries, 5 contractors, and active delay slips.
+                  <div className="p-6 text-center text-xs text-slate-400">
+                    Type to search across tasks, deliveries, contractors, and active delays.
                   </div>
                 )}
               </div>
