@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useProjectStore } from '../store';
+import { AddDelayModal } from '../components/Tasks/AddDelayModal';
+import { ProgressModal } from '../components/Tasks/ProgressModal';
+import type { Task } from '../engine/types';
 import {
   Search,
   Filter,
@@ -11,6 +14,8 @@ import {
   CheckSquare,
   Clock,
   CircleAlert,
+  Plus,
+  Sliders,
 } from 'lucide-react';
 
 export const TasksPage: React.FC = () => {
@@ -19,6 +24,9 @@ export const TasksPage: React.FC = () => {
     contractors,
     deliveries,
     delays,
+    project,
+    addDelay,
+    updateTask,
     injectSteelDelayDemo,
     resetDemo,
   } = useProjectStore();
@@ -26,6 +34,12 @@ export const TasksPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedTrade, setSelectedTrade] = useState<string>('all');
   const [filterType, setFilterType] = useState<'all' | 'delivery' | 'task'>('all');
+
+  // Modal states
+  const [delayModalOpen, setDelayModalOpen] = useState(false);
+  const [selectedTaskForDelay, setSelectedTaskForDelay] = useState<string | undefined>(undefined);
+  const [progressModalOpen, setProgressModalOpen] = useState(false);
+  const [taskForProgress, setTaskForProgress] = useState<Task | null>(null);
 
   const contractorMap = new Map(contractors.map((c) => [c.id, c]));
   const trades = Array.from(new Set(tasks.map((t) => t.trade)));
@@ -53,24 +67,44 @@ export const TasksPage: React.FC = () => {
 
   const hasSteelDelay = delays.some((d) => d.taskId === 'task-del-steel');
 
+  const openDelayModalForTask = (taskId: string) => {
+    setSelectedTaskForDelay(taskId);
+    setDelayModalOpen(true);
+  };
+
+  const openProgressModalForTask = (task: Task) => {
+    setTaskForProgress(task);
+    setProgressModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header controls & Demo action buttons */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            Project Tasks & Deliveries Register
+            Tasks, Progress & Delays Register
             <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/10 text-slate-300 font-mono">
               {tasks.length} total
             </span>
           </h2>
-          <p className="text-xs text-[#9aa6b8]">
-            Apex Hospital Wing B · Live state backed by Zustand & localStorage.
+          <p className="text-xs text-[#8e9ab0]">
+            Update task progress, log verified delays with live preview, or test scripted ripples.
           </p>
         </div>
 
-        {/* Demo buttons */}
+        {/* Action buttons */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => {
+              setSelectedTaskForDelay(undefined);
+              setDelayModalOpen(true);
+            }}
+            className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#ffb020] text-black hover:bg-amber-400 transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/10"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Log Delay Event
+          </button>
           <button
             onClick={injectSteelDelayDemo}
             disabled={hasSteelDelay}
@@ -81,7 +115,7 @@ export const TasksPage: React.FC = () => {
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
-            {hasSteelDelay ? '⚡ Steel Delay Injected (+6d)' : '⚡ Scripted: Inject Steel Delay'}
+            {hasSteelDelay ? '⚡ Steel Delay Injected' : '⚡ Inject Steel Delay'}
           </button>
           <button
             onClick={resetDemo}
@@ -100,7 +134,7 @@ export const TasksPage: React.FC = () => {
             <CheckSquare className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-xs text-[#9aa6b8]">Work Tasks</div>
+            <div className="text-xs text-[#8e9ab0]">Work Tasks</div>
             <div className="text-lg font-bold text-white">
               {tasks.filter((t) => !t.isDelivery).length}
             </div>
@@ -112,7 +146,7 @@ export const TasksPage: React.FC = () => {
             <Package className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-xs text-[#9aa6b8]">Material Deliveries</div>
+            <div className="text-xs text-[#8e9ab0]">Material Deliveries</div>
             <div className="text-lg font-bold text-[#ffb020]">{deliveries.length}</div>
           </div>
         </div>
@@ -122,7 +156,7 @@ export const TasksPage: React.FC = () => {
             <HardHat className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-xs text-[#9aa6b8]">Contractors</div>
+            <div className="text-xs text-[#8e9ab0]">Contractors</div>
             <div className="text-lg font-bold text-emerald-400">{contractors.length}</div>
           </div>
         </div>
@@ -132,7 +166,7 @@ export const TasksPage: React.FC = () => {
             <CircleAlert className="w-4 h-4" />
           </div>
           <div>
-            <div className="text-xs text-[#9aa6b8]">Active Delay Events</div>
+            <div className="text-xs text-[#8e9ab0]">Active Delay Events</div>
             <div className="text-lg font-bold text-[#ff4d4d]">{delays.length}</div>
           </div>
         </div>
@@ -141,7 +175,7 @@ export const TasksPage: React.FC = () => {
       {/* Filter and Search Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-[#121823]/60 border border-white/10 p-3 rounded-2xl">
         <div className="relative flex-1 min-w-[240px]">
-          <Search className="w-4 h-4 text-[#9aa6b8] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#8e9ab0] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search tasks, materials, trades, sites..."
@@ -152,7 +186,7 @@ export const TasksPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <Filter className="w-3.5 h-3.5 text-[#9aa6b8]" />
+          <Filter className="w-3.5 h-3.5 text-[#8e9ab0]" />
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as any)}
@@ -182,15 +216,16 @@ export const TasksPage: React.FC = () => {
       <div className="border border-white/10 rounded-2xl bg-[#0e1420]/80 overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-white/[0.04] text-[#9aa6b8] uppercase font-semibold text-[11px] tracking-wider border-b border-white/10">
+            <thead className="bg-white/[0.04] text-[#8e9ab0] uppercase font-semibold text-[11px] tracking-wider border-b border-white/10">
               <tr>
                 <th className="py-3 px-4">Task Name & Trade</th>
                 <th className="py-3 px-3">Location / Site</th>
                 <th className="py-3 px-3">Contractor</th>
-                <th className="py-3 px-3 text-center">Dur (Min / Likely / Max)</th>
+                <th className="py-3 px-3 text-center">Dur (Min/Likely/Max)</th>
                 <th className="py-3 px-3">Dependencies</th>
                 <th className="py-3 px-3 text-center">Progress</th>
-                <th className="py-3 px-3 text-right">Delays</th>
+                <th className="py-3 px-3 text-center">Delays</th>
+                <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 font-normal">
@@ -222,7 +257,7 @@ export const TasksPage: React.FC = () => {
                           <span className="font-semibold text-white group-hover:text-[#ffb020] transition-colors">
                             {t.name}
                           </span>
-                          <div className="text-[10px] text-[#9aa6b8] flex items-center gap-2 mt-0.5">
+                          <div className="text-[10px] text-[#8e9ab0] flex items-center gap-2 mt-0.5">
                             <span className="text-slate-400 font-mono">{t.id}</span>
                             <span>•</span>
                             <span className="text-amber-400/90">{t.trade}</span>
@@ -274,7 +309,7 @@ export const TasksPage: React.FC = () => {
 
                     <td className="py-3 px-3">
                       {t.predecessors.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        <div className="flex flex-wrap gap-1 max-w-[180px]">
                           {t.predecessors.map((pId) => (
                             <span
                               key={pId}
@@ -290,7 +325,7 @@ export const TasksPage: React.FC = () => {
                     </td>
 
                     <td className="py-3 px-3">
-                      <div className="w-24 mx-auto">
+                      <div className="w-20 mx-auto">
                         <div className="flex justify-between text-[10px] mb-1 font-mono">
                           <span
                             className={
@@ -319,7 +354,7 @@ export const TasksPage: React.FC = () => {
                       </div>
                     </td>
 
-                    <td className="py-3 px-3 text-right">
+                    <td className="py-3 px-3 text-center">
                       {taskDelays > 0 ? (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-[#ff4d4d] border border-red-500/30 font-mono">
                           +{taskDelays}d slip
@@ -328,6 +363,29 @@ export const TasksPage: React.FC = () => {
                         <span className="text-slate-600 font-mono">0d</span>
                       )}
                     </td>
+
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {!t.isDelivery && (
+                          <button
+                            onClick={() => openProgressModalForTask(t)}
+                            className="p-1 px-2 rounded-lg bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 border border-blue-500/20 flex items-center gap-1 transition-colors text-[11px]"
+                            title="Update progress"
+                          >
+                            <Sliders className="w-3 h-3" />
+                            Progress
+                          </button>
+                        )}
+                        <button
+                          onClick={() => openDelayModalForTask(t.id)}
+                          className="p-1 px-2 rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/20 flex items-center gap-1 transition-colors text-[11px]"
+                          title="Inject delay"
+                        >
+                          <CircleAlert className="w-3 h-3" />
+                          Delay
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
@@ -335,6 +393,27 @@ export const TasksPage: React.FC = () => {
           </table>
         </div>
       </div>
+
+      {/* Modals */}
+      <AddDelayModal
+        isOpen={delayModalOpen}
+        onClose={() => setDelayModalOpen(false)}
+        tasks={tasks}
+        delays={delays}
+        deliveries={deliveries}
+        initialTaskId={selectedTaskForDelay}
+        statusDay={project.statusDay}
+        targetFinish={project.targetFinish}
+        onConfirm={(data) => addDelay(data)}
+      />
+
+      <ProgressModal
+        isOpen={progressModalOpen}
+        onClose={() => setProgressModalOpen(false)}
+        task={taskForProgress}
+        statusDay={project.statusDay}
+        onUpdate={(id, updates) => updateTask(id, updates)}
+      />
     </div>
   );
 };
