@@ -5,3 +5,4 @@ export * from './simulate';
 export * from './blast';
 export * from './monteCarlo';
 export * from './recovery';
+export * from './alerts';

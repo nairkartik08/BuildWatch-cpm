@@ -19,7 +19,9 @@ import {
   Sliders,
   Edit2,
   Trash2,
+  MessageSquare,
 } from 'lucide-react';
+import { TaskCommentsModal } from '../components/Collab/TaskCommentsModal';
 
 export const TasksPage: React.FC = () => {
   const {
@@ -45,6 +47,8 @@ export const TasksPage: React.FC = () => {
   const [taskForProgress, setTaskForProgress] = useState<Task | null>(null);
   const [taskEditModalOpen, setTaskEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
+  const [commentsModalOpen, setCommentsModalOpen] = useState(false);
+  const [taskForComments, setTaskForComments] = useState<Task | null>(null);
 
   const { addTask, deleteTask } = useProjectStore();
 
@@ -393,6 +397,16 @@ export const TasksPage: React.FC = () => {
                           </button>
                         )}
                         <button
+                          onClick={() => {
+                            setTaskForComments(t);
+                            setCommentsModalOpen(true);
+                          }}
+                          className="p-1 px-1.5 rounded-lg bg-amber-500/10 text-[#ffb020] hover:bg-amber-500/20 border border-amber-500/20 flex items-center gap-1 transition-colors text-[10px]"
+                          title="Field notes & comments"
+                        >
+                          <MessageSquare className="w-3 h-3" />
+                        </button>
+                        <button
                           onClick={() => openDelayModalForTask(t.id)}
                           className="p-1 px-1.5 rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/20 flex items-center gap-1 transition-colors text-[10px]"
                           title="Inject delay"
@@ -448,6 +462,12 @@ export const TasksPage: React.FC = () => {
             addTask(savedTask);
           }
         }}
+      />
+
+      <TaskCommentsModal
+        isOpen={commentsModalOpen}
+        onClose={() => setCommentsModalOpen(false)}
+        task={taskForComments}
       />
 
       <AddDelayModal
