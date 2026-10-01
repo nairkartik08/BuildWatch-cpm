@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { HardHat, ArrowRight } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -13,13 +14,12 @@ export const LandingPage: React.FC = () => {
   const [conf, setConf] = useState(92);
   const [fin, setFin] = useState(0);
   const [crit, setCrit] = useState(9);
-  const [note, setNote] = useState('Live demo: drag your mouse to tilt the site. Scroll to orbit.');
-  const [btnText, setBtnText] = useState('⚡ Inject steel delay');
+  const [note, setNote] = useState('Interactive 3D Site View: Drag to rotate view. Scroll to zoom.');
+  const [btnText, setBtnText] = useState('Simulate Steel Delay (+6d)');
   const pathColRef = useRef<any>(null);
   const pulseRef = useRef(0);
 
   useEffect(() => {
-    // Dynamically load Three.js if not present
     let script: HTMLScriptElement | null = null;
     let animId: number;
 
@@ -44,8 +44,8 @@ export const LandingPage: React.FC = () => {
       container.appendChild(R.domElement);
 
       const S = new T.Scene();
-      S.background = new T.Color(0x0b0f16);
-      S.fog = new T.Fog(0x0b0f16, 60, 140);
+      S.background = new T.Color(0x0c1017);
+      S.fog = new T.Fog(0x0c1017, 60, 140);
       const C = new T.OrthographicCamera(-1, 1, 1, -1, -200, 300), TG = P3(0, 2, 0);
       const mc: Record<number, any> = {}, M = (c: number) => mc[c] || (mc[c] = new T.MeshLambertMaterial({ color: c }));
       const UB = new T.BoxGeometry(1, 1, 1), CG = new T.CylinderGeometry(1, 1, 1, 10), WG = CG.clone().rotateZ(PI / 2), ZA = P3(0, 0, 1);
@@ -104,7 +104,7 @@ export const LandingPage: React.FC = () => {
             uv.setXY(k, uv.getX(k) * su, uv.getY(k) * n / 4);
           }
         }
-        const o = new T.Mesh(ge, new T.MeshLambertMaterial({ color: c, map: TX, emissive: 0xffffff, emissiveMap: TE, emissiveIntensity: 0.55 }));
+        const o = new T.Mesh(ge, new T.MeshLambertMaterial({ color: c, map: TX, emissive: 0xffffff, emissiveMap: TE, emissiveIntensity: 0.35 }));
         o.position.y = y + h / 2;
         o.castShadow = o.receiveShadow = true;
         g.add(o);
@@ -277,7 +277,7 @@ export const LandingPage: React.FC = () => {
         });
       });
 
-      const pathCol = new T.Color(0x35d07f);
+      const pathCol = new T.Color(0x22c55e);
       pathColRef.current = pathCol;
       const pm = new T.MeshBasicMaterial({ color: pathCol });
       const nodes: any[] = [];
@@ -384,181 +384,168 @@ export const LandingPage: React.FC = () => {
     setFin(nextLate ? 9 : 0);
     setCrit(nextLate ? 14 : 9);
     setNote(nextLate ? 'Steel +6d → critical path switched, 5 tasks hit. Click again to apply recovery.' : 'Recovered: expedite steel saves 4 days.');
-    setBtnText(nextLate ? '🛠️ Apply recovery' : '⚡ Inject steel delay');
+    setBtnText(nextLate ? 'Apply recovery action' : 'Simulate steel delay (+6d)');
     if (pathColRef.current) {
-      pathColRef.current.setHex(nextLate ? 0xff3b3b : 0x35d07f);
+      pathColRef.current.setHex(nextLate ? 0xef4444 : 0x22c55e);
       pulseRef.current = 1;
     }
   };
 
-  const histHeights = [4, 7, 12, 20, 32, 46, 60, 72, 80, 66, 50, 36, 24, 15, 9, 5];
 
   return (
-    <div className="relative min-h-screen text-[#e9edf3] selection:bg-[#ffb020] selection:text-black">
+    <div className="relative min-h-screen text-[#f1f5f9] font-sans selection:bg-blue-600 selection:text-white bg-[#0c1017]">
       {/* Three.js canvas container */}
       <div ref={canvasContainerRef} className="fixed inset-0 pointer-events-none" />
 
-      {/* Shade gradient overlay */}
-      <div className="fixed inset-0 z-[1] pointer-events-none bg-gradient-to-r from-[#0b0f16]/95 via-[#0b0f16]/40 to-transparent" />
+      {/* Shade overlay */}
+      <div className="fixed inset-0 z-[1] pointer-events-none bg-[#0c1017]/90" />
 
       {/* Navigation */}
-      <nav className="relative z-10 flex justify-between items-center px-6 md:px-12 py-5 sticky top-0 backdrop-blur-md bg-[#0b0f16]/45 border-b border-white/5">
-        <div className="font-extrabold text-lg tracking-wider flex items-center gap-3">
-          <span className="w-3 h-3 rounded-full bg-[#ff4d4d] animate-ping" />
-          Critical Path Radar
+      <nav className="relative z-10 flex justify-between items-center px-6 md:px-12 py-4 bg-[#141c2b] border-b border-[#232f44]">
+        <div className="font-bold text-base tracking-tight flex items-center gap-2.5 text-white">
+          <span className="p-1 rounded bg-blue-600/20 border border-blue-500/30 text-blue-400">
+            <HardHat className="w-4 h-4" />
+          </span>
+          <span>BUILDWATCH CPM</span>
         </div>
-        <div className="hidden md:flex items-center gap-6 text-sm text-[#9aa6b8]">
-          <a href="#features" className="hover:text-white transition-colors">Features</a>
-          <a href="#how" className="hover:text-white transition-colors">How it works</a>
-          <Link to="/app" className="bg-[#121823]/80 border border-white/10 px-4 py-2 rounded-lg text-white font-medium hover:border-[#ffb020] transition-colors">
-            Launch Radar App →
+        <div className="hidden md:flex items-center gap-6 text-xs text-slate-300">
+          <a href="#features" className="hover:text-white transition-colors">Key Modules</a>
+          <a href="#how" className="hover:text-white transition-colors">Workflow</a>
+          <Link to="/app" className="bg-blue-600 px-4 py-2 rounded text-white font-bold hover:bg-blue-500 transition-colors">
+            Open Application →
           </Link>
         </div>
       </nav>
 
       <main className="relative z-10 max-w-6xl mx-auto px-6 md:px-12">
         {/* Hero Section */}
-        <section className="min-h-[85vh] flex flex-col justify-center max-w-2xl py-12">
-          <span className="inline-block px-3.5 py-1.5 border border-white/10 rounded-full text-xs text-[#ffb020] bg-[#121823]/70 w-fit tracking-widest uppercase mb-4">
-            Minithon 4.0 · Construction Delay Risk
+        <section className="min-h-[80vh] flex flex-col justify-center max-w-2xl py-12">
+          <span className="inline-block px-3 py-1 border border-[#232f44] rounded text-xs text-blue-400 bg-[#141c2b] w-fit font-bold uppercase tracking-wider mb-4">
+            Construction Project CPM & Risk Engine
           </span>
-          <h1 className="text-4xl md:text-7xl font-extrabold tracking-tight leading-none mb-6">
-            See the delay <span className="bg-gradient-to-r from-[#ffb020] to-[#ff4d4d] bg-clip-text text-transparent">before it happens.</span>
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight mb-4 text-white">
+            Identify schedule delays before they impact handover dates.
           </h1>
-          <p className="text-lg md:text-xl text-[#9aa6b8] leading-relaxed mb-8">
-            A Gantt chart shows when tasks happen. Critical Path Radar shows which delays actually threaten your deadline — and the fastest way to win the days back.
+          <p className="text-sm md:text-base text-slate-300 leading-relaxed mb-6">
+            BuildWatch CPM calculates the exact zero-float critical path, models Monte Carlo schedule uncertainty, and recommends cost-optimal recovery plans for construction managers.
           </p>
 
-          <div className="flex flex-wrap gap-4 mb-6">
+          <div className="flex flex-wrap gap-3 mb-6">
             <button
               onClick={handleInjectDelay}
-              className="px-6 py-3.5 rounded-xl font-bold bg-gradient-to-r from-[#ffb020] to-[#ff4d4d] text-[#160a00] hover:-translate-y-0.5 transition-transform shadow-lg shadow-[#ff4d4d]/20"
+              className="px-5 py-2.5 rounded font-bold bg-amber-600 hover:bg-amber-500 text-white transition-colors cursor-pointer text-xs"
             >
               {btnText}
             </button>
             <Link
               to="/app"
-              className="px-6 py-3.5 rounded-xl font-bold bg-[#121823]/80 text-white border border-white/10 hover:border-[#ffb020] hover:-translate-y-0.5 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 rounded font-bold bg-blue-600 hover:bg-blue-500 text-white transition-colors flex items-center gap-2 cursor-pointer text-xs"
             >
-              Open App Dashboard ➔
+              Open Project Dashboard <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="flex flex-wrap gap-4 mt-2">
-            <div className="bg-[#121823]/75 border border-white/10 rounded-2xl p-4 min-w-[140px] backdrop-blur-md">
-              <b className={`text-3xl font-extrabold tracking-tight block ${late ? 'text-[#ff4d4d]' : 'text-[#35d07f]'} transition-colors`}>
+          <div className="grid grid-cols-3 gap-3 max-w-md">
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-3">
+              <b className={`text-2xl font-bold font-mono block ${late ? 'text-red-400' : 'text-emerald-400'}`}>
                 {conf}%
               </b>
-              <small className="text-xs text-[#9aa6b8]">on-time confidence</small>
+              <span className="text-[11px] text-slate-400">On-Time Probability</span>
             </div>
-            <div className="bg-[#121823]/75 border border-white/10 rounded-2xl p-4 min-w-[140px] backdrop-blur-md">
-              <b className={`text-3xl font-extrabold tracking-tight block ${late ? 'text-[#ff4d4d]' : 'text-white'} transition-colors`}>
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-3">
+              <b className={`text-2xl font-bold font-mono block ${late ? 'text-red-400' : 'text-white'}`}>
                 +{fin}d
               </b>
-              <small className="text-xs text-[#9aa6b8]">finish vs deadline</small>
+              <span className="text-[11px] text-slate-400">Schedule Variance</span>
             </div>
-            <div className="bg-[#121823]/75 border border-white/10 rounded-2xl p-4 min-w-[140px] backdrop-blur-md">
-              <b className="text-3xl font-extrabold tracking-tight block text-white">
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-3">
+              <b className="text-2xl font-bold font-mono block text-white">
                 {crit}
               </b>
-              <small className="text-xs text-[#9aa6b8]">critical tasks</small>
+              <span className="text-[11px] text-slate-400">Critical Path Tasks</span>
             </div>
           </div>
-          <div className="text-xs text-[#ffb020] mt-3 h-5">{note}</div>
+          <div className="text-xs text-amber-400 mt-3 font-mono">{note}</div>
         </section>
 
         {/* Features Grid */}
-        <section id="features" className="py-20 border-t border-white/5">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-3">Not a chart. A radar.</h2>
-          <p className="text-[#9aa6b8] max-w-xl mb-12">Six engines working on every schedule change, all recalculated live in your browser.</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-[#121823]/70 border border-white/10 rounded-2xl p-6 hover:border-[#ffb020] transition-all hover:-translate-y-1 backdrop-blur-md">
-              <div className="text-3xl mb-3">🛣️</div>
-              <h3 className="font-bold text-lg mb-2">Live Critical Path</h3>
-              <p className="text-sm text-[#9aa6b8] leading-relaxed">Forward and backward pass on every edit. Zero-float tasks glow red, near-critical tasks amber.</p>
+        <section id="features" className="py-16 border-t border-[#232f44]">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white mb-2">Core Project Management Modules</h2>
+          <p className="text-slate-400 text-xs max-w-xl mb-8">Integrated critical path method calculations and risk assessment built specifically for field operations.</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-5">
+              <div className="text-xl mb-2">🛣️</div>
+              <h3 className="font-bold text-white text-sm mb-1">Live Critical Path Method</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">Automatic forward and backward pass calculation. Zero-float tasks clearly highlighted in red.</p>
             </div>
-            <div className="bg-[#121823]/70 border border-white/10 rounded-2xl p-6 hover:border-[#ffb020] transition-all hover:-translate-y-1 backdrop-blur-md">
-              <div className="text-3xl mb-3">🎲</div>
-              <h3 className="font-bold text-lg mb-2">Monte Carlo Confidence</h3>
-              <p className="text-sm text-[#9aa6b8] leading-relaxed">1,000 simulated futures give a real probability of finishing on time, plus a criticality index per task.</p>
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-5">
+              <div className="text-xl mb-2">📊</div>
+              <h3 className="font-bold text-white text-sm mb-1">Monte Carlo Risk Simulation</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">600 iteration simulation engine providing P50, P80, and P90 realistic completion probabilities.</p>
             </div>
-            <div className="bg-[#121823]/70 border border-white/10 rounded-2xl p-6 hover:border-[#ffb020] transition-all hover:-translate-y-1 backdrop-blur-md">
-              <div className="text-3xl mb-3">💥</div>
-              <h3 className="font-bold text-lg mb-2">Delay Blast Radius</h3>
-              <p className="text-sm text-[#9aa6b8] leading-relaxed">Click a late task and watch every downstream task light up with its days of slip.</p>
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-5">
+              <div className="text-xl mb-2">💥</div>
+              <h3 className="font-bold text-white text-sm mb-1">Downstream Impact Analysis</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">Instantly trace how a delay on one trade or material delivery affects dependent downstream tasks.</p>
             </div>
-            <div className="bg-[#121823]/70 border border-white/10 rounded-2xl p-6 hover:border-[#ffb020] transition-all hover:-translate-y-1 backdrop-blur-md">
-              <div className="text-3xl mb-3">🧾</div>
-              <h3 className="font-bold text-lg mb-2">Delay Attribution</h3>
-              <p className="text-sm text-[#9aa6b8] leading-relaxed">Of a 9-day slip: 5 from cement, 3 from rain, 1 from crew. Know who or what caused it.</p>
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-5">
+              <div className="text-xl mb-2">🧾</div>
+              <h3 className="font-bold text-white text-sm mb-1">Delay Root Cause Log</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">Categorize schedule slips by weather, material arrival, contractor availability, or site issues.</p>
             </div>
-            <div className="bg-[#121823]/70 border border-white/10 rounded-2xl p-6 hover:border-[#ffb020] transition-all hover:-translate-y-1 backdrop-blur-md">
-              <div className="text-3xl mb-3">🛠️</div>
-              <h3 className="font-bold text-lg mb-2">Recovery Optimizer</h3>
-              <p className="text-sm text-[#9aa6b8] leading-relaxed">Crash, expedite, parallelize — ranked by days saved per rupee, one click to apply.</p>
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-5">
+              <div className="text-xl mb-2">🛠️</div>
+              <h3 className="font-bold text-white text-sm mb-1">Schedule Recovery Optimizer</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">Ranked crash and expedite recommendations calculated by days saved per ₹ Lakh cost.</p>
             </div>
-            <div className="bg-[#121823]/70 border border-white/10 rounded-2xl p-6 hover:border-[#ffb020] transition-all hover:-translate-y-1 backdrop-blur-md">
-              <div className="text-3xl mb-3">🔔</div>
-              <h3 className="font-bold text-lg mb-2">Alerts & Collaboration</h3>
-              <p className="text-sm text-[#9aa6b8] leading-relaxed">Float thresholds, late deliveries, contractor comments and a shareable report link.</p>
+            <div className="bg-[#141c2b] border border-[#232f44] rounded p-5">
+              <div className="text-xl mb-2">📄</div>
+              <h3 className="font-bold text-white text-sm mb-1">Executive Audit Reports</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">Generate self-contained summary reports for project owners, superintendents, and subcontractors.</p>
             </div>
           </div>
         </section>
 
         {/* How it works */}
-        <section id="how" className="py-20 border-t border-white/5">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-3">From delay to decision in seconds</h2>
-          <p className="text-[#9aa6b8] max-w-xl mb-10">The scripted flow our demo follows.</p>
-          <div className="grid gap-4">
+        <section id="how" className="py-16 border-t border-[#232f44]">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-white mb-2">Standard Project Management Workflow</h2>
+          <p className="text-slate-400 text-xs max-w-xl mb-6">How project managers use BuildWatch CPM to maintain schedule control.</p>
+          <div className="grid gap-3">
             {[
-              { num: '1', title: 'Model the project', desc: 'tasks, dependencies, contractors, deliveries' },
-              { num: '2', title: 'A delivery slips', desc: 'the critical path switches route live' },
-              { num: '3', title: 'Confidence collapses', desc: '92% → 41%, blast radius lights up' },
-              { num: '4', title: 'Apply the best move', desc: 'expedite steel, confidence recovers to ~80%' },
+              { num: '1', title: 'Import or Build Schedule', desc: 'Define tasks, estimated duration ranges (min/likely/max), trade contractors, and predecessors.' },
+              { num: '2', title: 'Track Material Deliveries & Progress', desc: 'Log actual progress percentage and actual arrival dates for critical long-lead items.' },
+              { num: '3', title: 'Analyze Delay Propagation', desc: 'System automatically recalculates float buffers and alerts if the critical path shifts.' },
+              { num: '4', title: 'Apply Cost-Optimal Recovery', desc: 'Select top-ranked crash/expedite actions to restore project handover deadline.' },
             ].map((step) => (
-              <div key={step.num} className="flex items-center gap-6 bg-[#121823]/70 border border-white/10 rounded-2xl p-5 backdrop-blur-md">
-                <span className="text-2xl font-extrabold text-[#ffb020] min-w-[32px]">{step.num}</span>
+              <div key={step.num} className="flex items-center gap-4 bg-[#141c2b] border border-[#232f44] rounded p-4">
+                <span className="text-lg font-bold font-mono text-blue-400 min-w-[24px]">{step.num}</span>
                 <div>
-                  <b className="text-white block">{step.title}</b>
-                  <span className="text-sm text-[#9aa6b8]">{step.desc}</span>
+                  <b className="text-white text-xs block">{step.title}</b>
+                  <span className="text-xs text-slate-400">{step.desc}</span>
                 </div>
               </div>
             ))}
           </div>
-
-          <div className="bg-[#121823]/70 border border-white/10 rounded-2xl p-6 mt-8 backdrop-blur-md">
-            <b className="block text-white mb-4">Finish-date distribution (1,000 runs)</b>
-            <div className="flex items-end gap-1.5 h-28 pt-4">
-              {histHeights.map((h, i) => (
-                <div
-                  key={i}
-                  style={{ height: `${h}%` }}
-                  className={`flex-1 rounded-t transition-all duration-700 ${
-                    i > 10 ? 'bg-gradient-to-t from-[#8a1b1b] to-[#ff4d4d]' : 'bg-gradient-to-t from-[#1b4d8a] to-[#4da3ff]'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
         </section>
 
         {/* CTA */}
-        <section className="py-24 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">Stop reading schedules. Start beating them.</h2>
-          <p className="text-[#9aa6b8] max-w-md mx-auto mb-8">Built in under four hours for Minithon 4.0.</p>
+        <section className="py-16 text-center border-t border-[#232f44]">
+          <h2 className="text-2xl font-bold text-white mb-2">Ready to inspect your project schedule?</h2>
+          <p className="text-slate-400 text-xs max-w-md mx-auto mb-6">Explore the interactive schedule overview, network diagram, and risk logs.</p>
           <div className="flex justify-center gap-4">
             <Link
               to="/app"
-              className="px-8 py-4 rounded-xl font-bold bg-gradient-to-r from-[#ffb020] to-[#ff4d4d] text-[#160a00] hover:-translate-y-0.5 transition-transform shadow-xl shadow-[#ff4d4d]/25 text-lg"
+              className="px-6 py-3 rounded text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-colors cursor-pointer"
             >
-              Launch the Radar App 🚀
+              Open Application Dashboard →
             </Link>
           </div>
         </section>
       </main>
 
-      <footer className="relative z-10 text-center text-[#9aa6b8] py-8 text-xs border-t border-white/5 bg-[#0b0f16]/90">
-        Critical Path Radar · Minithon 4.0 · TechNext 2026
+      <footer className="relative z-10 text-center text-slate-500 py-6 text-xs border-t border-[#232f44] bg-[#0f172a]">
+        BuildWatch CPM · Construction Project Management Tool
       </footer>
     </div>
   );

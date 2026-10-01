@@ -13,10 +13,6 @@ import {
   TrendingDown,
   CheckCircle2,
   Trash2,
-  AlertTriangle,
-  Clock,
-  Layers,
-  ArrowRight,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
