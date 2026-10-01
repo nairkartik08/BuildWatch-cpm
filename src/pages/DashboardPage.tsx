@@ -13,6 +13,10 @@ import {
   TrendingDown,
   CheckCircle2,
   Trash2,
+  AlertTriangle,
+  Clock,
+  Layers,
+  ArrowRight,
 } from 'lucide-react';
 
 export const DashboardPage: React.FC = () => {
@@ -99,21 +103,18 @@ export const DashboardPage: React.FC = () => {
   const isOverDeadline = variance > 0;
 
   const confPercent = Math.round(monteCarlo.probOnTime * 100);
-  const confColor =
-    confPercent >= 75 ? 'text-[#35d07f]' : confPercent >= 50 ? 'text-[#ffb020]' : 'text-[#ff4d4d]';
-  const confStrokeColor =
-    confPercent >= 75 ? '#35d07f' : confPercent >= 50 ? '#ffb020' : '#ff4d4d';
+  const confBadgeStyle =
+    confPercent >= 75
+      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+      : confPercent >= 50
+      ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+      : 'bg-red-500/10 text-red-400 border-red-500/30';
 
   const criticalCount = cpmCurrent.criticalPath.length;
   const nearCriticalCount = Object.values(cpmCurrent.tasks).filter((t) => t.nearCritical).length;
 
   const scaleMax = Math.max(projectFinish, targetDeadline, cpmBaseline.projectFinish, 70) + 4;
   const toPercent = (val: number) => `${Math.min(100, Math.max(0, (val / scaleMax) * 100))}%`;
-
-  // Circular gauge circumference
-  const radius = 50;
-  const circumference = 2 * Math.PI * radius; // ~314.16
-  const strokeDashoffset = circumference * (1 - monteCarlo.probOnTime);
 
   // Histogram bins (16 bins)
   const histData = useMemo(() => {
@@ -147,10 +148,10 @@ export const DashboardPage: React.FC = () => {
   // Delay cause breakdown
   const delayAttribution = useMemo(() => {
     const causes: Record<string, { days: number; color: string; label: string }> = {
-      delivery: { days: 0, color: '#4da3ff', label: 'Delivery' },
-      weather: { days: 0, color: '#ffb020', label: 'Weather' },
-      resource: { days: 0, color: '#ff4d4d', label: 'Crew' },
-      other: { days: 0, color: '#9aa6b8', label: 'Other' },
+      delivery: { days: 0, color: '#3b82f6', label: 'Material Arrival' },
+      weather: { days: 0, color: '#f59e0b', label: 'Weather Delay' },
+      resource: { days: 0, color: '#ef4444', label: 'Crew / Resource' },
+      other: { days: 0, color: '#64748b', label: 'Other Causes' },
     };
 
     let total = 0;
@@ -166,47 +167,49 @@ export const DashboardPage: React.FC = () => {
 
   // Dynamic alerts list
   const activeAlerts = useMemo(() => {
-    const alerts: { color: string; text: string }[] = [];
+    const alerts: { color: string; text: string; category: string }[] = [];
 
-    // Late deliveries & delays
     for (const d of delays) {
       const t = tasks.find((item) => item.id === d.taskId);
       if (t?.isDelivery) {
         alerts.push({
-          color: '#ff4d4d',
-          text: `Late delivery: ${t.name.replace('📦 Material Arrival: ', '')} +${d.days}d (${d.cause})`,
+          color: '#ef4444',
+          category: 'Delivery Late',
+          text: `${t.name.replace('📦 Material Arrival: ', '')}: +${d.days}d (${d.cause})`,
         });
       } else {
         alerts.push({
-          color: '#ffb020',
-          text: `Delay slip: ${t?.name ?? d.taskId} +${d.days}d (${d.cause})`,
+          color: '#f59e0b',
+          category: 'Task Delay',
+          text: `${t?.name ?? d.taskId}: +${d.days}d (${d.cause})`,
         });
       }
     }
 
-    // Near-critical tasks
     for (const [taskId, res] of Object.entries(cpmCurrent.tasks)) {
       if (res.nearCritical) {
         const t = tasks.find((item) => item.id === taskId);
         alerts.push({
-          color: '#ffb020',
-          text: `Low buffer: ${t?.name ?? taskId} has only ${res.float}d float remaining`,
+          color: '#f59e0b',
+          category: 'Low Float',
+          text: `${t?.name ?? taskId}: Float reduced to ${res.float}d`,
         });
       }
     }
 
-    // Confidence warning
     if (monteCarlo.probOnTime < 0.7) {
       alerts.push({
-        color: '#ff4d4d',
-        text: `Deadline at risk: confidence dropped to ${confPercent}%`,
+        color: '#ef4444',
+        category: 'Risk Alert',
+        text: `On-time probability fell to ${confPercent}%`,
       });
     }
 
     if (alerts.length === 0) {
       alerts.push({
-        color: '#35d07f',
-        text: 'All clear: baseline critical path stable, no schedule variance.',
+        color: '#22c55e',
+        category: 'Baseline Stable',
+        text: 'Critical path on schedule with zero variance.',
       });
     }
 
@@ -221,16 +224,13 @@ export const DashboardPage: React.FC = () => {
       taskId: delayInputTaskId,
       days: Math.max(1, delayDays),
       cause: delayCause,
-      note: `Injected via interactive radar control on ${task?.name || delayInputTaskId}`,
+      note: `Added manually for ${task?.name || delayInputTaskId}`,
     });
   };
 
   // Handle Apply Recovery
   const handleApplyRecovery = (action: (typeof recoveryActions)[0]) => {
     if (action.kind === 'Expedite') {
-      const task = tasks.find((t) => t.id === action.taskId);
-      if (!task) return;
-      // Reduce delays on this delivery task by the saved days
       const targetDelay = delays.find((d) => d.taskId === action.taskId);
       if (targetDelay) {
         if (targetDelay.days <= action.daysSaved) {
@@ -246,7 +246,6 @@ export const DashboardPage: React.FC = () => {
         }
       }
     } else if (action.kind === 'Crash') {
-      // Compress task likely duration
       const task = tasks.find((t) => t.id === action.taskId);
       if (task) {
         updateTask(task.id, {
@@ -259,17 +258,15 @@ export const DashboardPage: React.FC = () => {
   const hasSteelDelay = delays.some((d) => d.taskId === 'task-del-steel');
 
   return (
-    <div className="space-y-4 pb-12">
-      {/* Top Interactive Controls Toolbar */}
-      <div className="bg-[#121926]/90 border border-white/10 rounded-2xl p-3 px-4 flex flex-wrap items-center justify-between gap-3 backdrop-blur-md">
+    <div className="space-y-4 pb-12 font-sans">
+      {/* Action Toolbar */}
+      <div className="bg-[#141c2b] border border-[#232f44] rounded-md p-3.5 px-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ff4d4d] animate-ping" />
-            <span className="font-extrabold text-white text-sm tracking-wide">Hospital Wing A</span>
-          </div>
-          <span className="text-xs text-[#8e9ab0]">·</span>
-          <span className="text-xs text-[#8e9ab0]">
-            Target Deadline: <strong className="text-white">Day {targetDeadline}</strong>
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+          <span className="font-bold text-white text-sm">Hospital Wing B — Construction Schedule</span>
+          <span className="text-slate-500">|</span>
+          <span className="text-xs text-slate-300">
+            Target Completion: <strong className="text-white font-mono">Day {targetDeadline}</strong>
           </span>
         </div>
 
@@ -278,7 +275,7 @@ export const DashboardPage: React.FC = () => {
           <select
             value={delayInputTaskId}
             onChange={(e) => setDelayInputTaskId(e.target.value)}
-            className="bg-[#0b0f16] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#ffb020] max-w-[170px] truncate"
+            className="bg-[#0f172a] border border-[#232f44] rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500 max-w-[180px] truncate"
           >
             {tasks.map((t) => (
               <option key={t.id} value={t.id}>
@@ -288,46 +285,49 @@ export const DashboardPage: React.FC = () => {
           </select>
 
           {/* Number of days */}
-          <input
-            type="number"
-            min={1}
-            max={20}
-            value={delayDays}
-            onChange={(e) => setDelayDays(parseInt(e.target.value) || 1)}
-            className="w-14 bg-[#0b0f16] border border-white/10 rounded-xl px-2 py-1.5 text-xs text-center text-white focus:outline-none focus:border-[#ffb020]"
-          />
+          <div className="flex items-center gap-1 bg-[#0f172a] border border-[#232f44] rounded px-2 py-1">
+            <span className="text-[11px] text-slate-400 font-medium">Days:</span>
+            <input
+              type="number"
+              min={1}
+              max={20}
+              value={delayDays}
+              onChange={(e) => setDelayDays(parseInt(e.target.value) || 1)}
+              className="w-10 bg-transparent text-xs text-center text-white font-bold focus:outline-none"
+            />
+          </div>
 
           {/* Cause */}
           <select
             value={delayCause}
             onChange={(e) => setDelayCause(e.target.value as any)}
-            className="bg-[#0b0f16] border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-[#ffb020]"
+            className="bg-[#0f172a] border border-[#232f44] rounded px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
           >
-            <option value="delivery">delivery</option>
-            <option value="weather">weather</option>
-            <option value="resource">crew</option>
-            <option value="other">other</option>
+            <option value="delivery">Delivery</option>
+            <option value="weather">Weather</option>
+            <option value="resource">Crew</option>
+            <option value="other">Other</option>
           </select>
 
           <button
             onClick={handleAddDelay}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold bg-[#121926] text-white border border-white/10 hover:border-[#ffb020] hover:text-[#ffb020] transition-all flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white transition-colors flex items-center gap-1.5 cursor-pointer"
           >
-            <PlusCircle className="w-3.5 h-3.5 text-[#ffb020]" />
-            + Add delay
+            <PlusCircle className="w-3.5 h-3.5" />
+            Log Delay
           </button>
 
           <button
             onClick={injectSteelDelayDemo}
             disabled={hasSteelDelay}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-md ${
+            className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer ${
               hasSteelDelay
-                ? 'bg-red-500/20 text-red-300 border border-red-500/30 cursor-not-allowed'
-                : 'bg-gradient-to-r from-[#ffb020] to-[#ff4d4d] text-[#190a00] hover:-translate-y-0.5 shadow-red-500/20'
+                ? 'bg-red-950/60 text-red-400 border border-red-800/60 cursor-not-allowed'
+                : 'bg-amber-600 hover:bg-amber-500 text-white'
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
-            {hasSteelDelay ? '🔥 Steel +6d (Injected)' : '🔥 Steel +6d'}
+            {hasSteelDelay ? 'Steel Delay Active (+6d)' : 'Simulate Steel Delay (+6d)'}
           </button>
 
           <button
@@ -335,182 +335,177 @@ export const DashboardPage: React.FC = () => {
               setSelectedTaskId(null);
               resetDemo();
             }}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#0b0f16] text-[#8e9ab0] border border-white/10 hover:text-white transition-all flex items-center gap-1"
+            className="px-3 py-1.5 rounded text-xs font-semibold bg-[#0f172a] text-slate-400 border border-[#232f44] hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            ↺ Reset
+            Reset Schedule
           </button>
         </div>
       </div>
 
-      {/* Grid: 4 Top KPI Cards */}
+      {/* Top 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Card 1: Deadline Confidence Circular Gauge (Span 4) */}
-        <div className="md:col-span-4 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] mb-3">
-            Deadline Confidence
-          </h3>
-          <div className="flex items-center gap-4">
-            <div className="relative w-28 h-28 shrink-0">
-              <svg className="w-28 h-28 -rotate-90" viewBox="0 0 120 120">
-                <circle
-                  cx="60"
-                  cy="60"
-                  r={radius}
-                  fill="none"
-                  stroke="rgba(255,255,255,0.08)"
-                  strokeWidth="12"
-                />
-                <circle
-                  cx="60"
-                  cy="60"
-                  r={radius}
-                  fill="none"
-                  stroke={confStrokeColor}
-                  strokeWidth="12"
-                  strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={strokeDashoffset}
-                  className="transition-all duration-700 ease-out"
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className={`text-2xl font-black tracking-tight ${confColor}`}>
-                  {confPercent}%
-                </span>
-              </div>
+        {/* Metric 1: On-Time Probability */}
+        <div className="md:col-span-3 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              On-Time Probability
+            </span>
+            <span className={`text-xs px-2 py-0.5 rounded font-mono font-bold border ${confBadgeStyle}`}>
+              {confPercent}%
+            </span>
+          </div>
+          <div>
+            <div className="text-3xl font-extrabold text-white font-mono">
+              {confPercent}%
             </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Probability of finishing by Day <strong className="text-white font-mono">{targetDeadline}</strong>
+            </p>
+          </div>
+          <div className="text-[11px] text-slate-500 mt-3 pt-2 border-t border-[#232f44]">
+            Based on 600 Monte Carlo iterations
+          </div>
+        </div>
 
-            <div>
-              <b className={`text-3xl font-extrabold tracking-tight ${confColor} block`}>
-                {confPercent}%
-              </b>
-              <small className="text-xs text-[#8e9ab0] leading-tight block mt-1">
-                chance to finish by day <strong className="text-white">{targetDeadline}</strong>
-              </small>
-              <span className="text-[10px] text-slate-400 mt-2 block font-mono">
-                600 simulated futures
+        {/* Metric 2: Projected Finish Date */}
+        <div className="md:col-span-3 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Projected Completion
+            </span>
+            {isOverDeadline ? (
+              <span className="text-xs px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/30 font-semibold flex items-center gap-1">
+                <TrendingDown className="w-3 h-3" /> Over Deadline
               </span>
-            </div>
+            ) : (
+              <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3" /> On Schedule
+              </span>
+            )}
           </div>
-        </div>
-
-        {/* Card 2: Projected Finish (Span 3) */}
-        <div className="md:col-span-3 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] mb-1">
-            Projected Finish
-          </h3>
           <div>
-            <b
-              className={`text-4xl font-extrabold tracking-tight block ${
-                isOverDeadline ? 'text-[#ff4d4d]' : 'text-white'
-              }`}
-            >
+            <div className={`text-3xl font-extrabold font-mono ${isOverDeadline ? 'text-red-400' : 'text-white'}`}>
               Day {projectFinish}
-            </b>
-            <div className="mt-2 text-xs font-semibold">
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
               {isOverDeadline ? (
-                <span className="text-[#ff4d4d] flex items-center gap-1">
-                  <TrendingDown className="w-3.5 h-3.5" />+{variance}d over deadline
-                </span>
+                <span className="text-red-400 font-semibold">+{variance} days behind target</span>
               ) : (
-                <span className="text-[#35d07f] flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  {Math.abs(variance)}d buffer remaining
-                </span>
+                <span className="text-emerald-400 font-semibold">{Math.abs(variance)} days ahead of deadline</span>
               )}
-            </div>
+            </p>
           </div>
-          <small className="text-[11px] text-[#8e9ab0] mt-2">Target: Day {targetDeadline}</small>
+          <div className="text-[11px] text-slate-500 mt-3 pt-2 border-t border-[#232f44]">
+            Target Deadline: Day {targetDeadline}
+          </div>
         </div>
 
-        {/* Card 3: Critical Tasks (Span 2) */}
-        <div className="md:col-span-2 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] mb-1">
-            Critical Tasks
-          </h3>
-          <div>
-            <b className="text-4xl font-extrabold tracking-tight text-[#ff4d4d] block">
-              {criticalCount}
-            </b>
-            <div className="text-xs text-[#ffb020] mt-2 font-medium">
-              {nearCriticalCount} near-critical
-            </div>
+        {/* Metric 3: Critical Path Tasks */}
+        <div className="md:col-span-3 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Critical Path Tasks
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/30 font-bold font-mono">
+              0 Float
+            </span>
           </div>
-          <small className="text-[10px] text-[#8e9ab0] mt-2">Float ≤ 2 days</small>
+          <div>
+            <div className="text-3xl font-extrabold text-red-400 font-mono">
+              {criticalCount} <span className="text-sm font-normal text-slate-400">tasks</span>
+            </div>
+            <p className="text-xs text-amber-400 mt-1 font-medium">
+              {nearCriticalCount} tasks near-critical (float ≤ 2d)
+            </p>
+          </div>
+          <div className="text-[11px] text-slate-500 mt-3 pt-2 border-t border-[#232f44]">
+            Directly impact final finish date
+          </div>
         </div>
 
-        {/* Card 4: P80 Finish (Span 3) */}
-        <div className="md:col-span-3 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] mb-1">
-            P80 Finish Date
-          </h3>
+        {/* Metric 4: P80 Confidence Date */}
+        <div className="md:col-span-3 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm flex flex-col justify-between">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              P80 Realistic Finish
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/30 font-mono">
+              80% Confidence
+            </span>
+          </div>
           <div>
-            <b className="text-4xl font-extrabold tracking-tight text-white block">
+            <div className="text-3xl font-extrabold text-white font-mono">
               Day {monteCarlo.p80}
-            </b>
-            <div className="text-xs text-[#8e9ab0] mt-2 font-medium">
-              80% of simulated futures end by this day
             </div>
+            <p className="text-xs text-slate-400 mt-1">
+              80% of schedule simulations complete by this day
+            </p>
           </div>
-          <small className="text-[10px] text-slate-400 mt-2 font-mono">
+          <div className="text-[11px] text-slate-500 mt-3 pt-2 border-t border-[#232f44] font-mono">
             P50: Day {monteCarlo.p50} · P90: Day {monteCarlo.p90}
-          </small>
+          </div>
         </div>
       </div>
 
-      {/* Row 2: Schedule & Blast Radius (Span 8) + Alerts (Span 4) */}
+      {/* Main Schedule & Impact Section */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Schedule & Blast Radius */}
-        <div className="md:col-span-8 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg">
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] flex items-center gap-2">
-              Schedule · Click a task for blast radius
-              {blastRadius && (
-                <span className="text-[#ffb020] font-bold normal-case text-xs flex items-center gap-1">
-                  ⚡ {tasks.find((t) => t.id === selectedTaskId)?.name} +5d →{' '}
-                  {blastRadius.affectedCount} tasks hit, finish{' '}
-                  {blastRadius.projectSlipDays > 0 ? `+${blastRadius.projectSlipDays}d` : 'unchanged'}
-                </span>
-              )}
-            </h3>
+        {/* Schedule Timeline & Task Impact */}
+        <div className="md:col-span-8 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-[#232f44]">
+            <div>
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                Critical Path & Schedule Timeline
+              </h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Click any task to analyze downstream impact and float
+              </p>
+            </div>
 
-            {/* Legend */}
-            <div className="flex items-center gap-3 text-xs text-[#8e9ab0]">
+            {/* Status Legend */}
+            <div className="flex items-center gap-3 text-xs text-slate-400">
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#ff4d4d]" />
-                critical
+                <span className="w-2.5 h-2.5 rounded-sm bg-red-500" />
+                Critical (0 Float)
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#ffb020]" />
-                near-critical
+                <span className="w-2.5 h-2.5 rounded-sm bg-amber-500" />
+                Near Critical
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#35d07f]" />
-                safe
+                <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500" />
+                On Track
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-[#4da3ff]" />
-                delivery
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm border border-dashed border-[#8e9ab0]" />
-                baseline ghost
+                <span className="w-2.5 h-2.5 rounded-sm bg-blue-500" />
+                Material Arrival
               </span>
             </div>
           </div>
 
-          {/* Interactive Gantt Chart with Ghost Bar and Deadline Marker */}
-          <div className="relative overflow-x-auto pt-2">
-            <div className="min-w-[620px] relative space-y-1">
-              {/* Deadline vertical guide line */}
+          {blastRadius && (
+            <div className="mb-3 p-2.5 rounded bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300 flex items-center justify-between">
+              <span>
+                <strong>Impact Analysis for "{tasks.find((t) => t.id === selectedTaskId)?.name}":</strong>{' '}
+                Injecting +5d delay affects <strong>{blastRadius.affectedCount} dependent tasks</strong>.
+              </span>
+              <span className="font-bold text-white font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-700">
+                Project Finish: {blastRadius.projectSlipDays > 0 ? `+${blastRadius.projectSlipDays}d slip` : 'Unchanged'}
+              </span>
+            </div>
+          )}
+
+          {/* Interactive Gantt Chart List */}
+          <div className="relative overflow-x-auto pt-1">
+            <div className="min-w-[600px] relative space-y-1">
+              {/* Target deadline vertical line */}
               <div
-                className="absolute top-0 bottom-0 pointer-events-none border-l-2 border-dashed border-[#ff4d4d] z-10"
+                className="absolute top-0 bottom-0 pointer-events-none border-l-2 border-dashed border-red-500 z-10 opacity-70"
                 style={{ left: `calc(160px + ${toPercent(targetDeadline)})` }}
               >
-                <em className="absolute -top-3.5 left-1 text-[10px] text-[#ff4d4d] not-italic font-mono font-bold">
-                  deadline (Day {targetDeadline})
-                </em>
+                <span className="absolute -top-3 left-1 text-[10px] text-red-400 font-mono font-bold">
+                  Target (Day {targetDeadline})
+                </span>
               </div>
 
               {tasks.map((task) => {
@@ -521,11 +516,11 @@ export const DashboardPage: React.FC = () => {
                 const isSelected = selectedTaskId === task.id;
                 const hit = blastRadius?.affectedTasks[task.id];
 
-                // Determine bar color
-                let barColor = 'bg-[#35d07f]';
-                if (res.critical) barColor = 'bg-[#ff4d4d]';
-                else if (res.nearCritical) barColor = 'bg-[#ffb020]';
-                else if (task.isDelivery) barColor = 'bg-[#4da3ff]';
+                // Determine bar background color
+                let barColor = 'bg-emerald-600';
+                if (res.critical) barColor = 'bg-red-600';
+                else if (res.nearCritical) barColor = 'bg-amber-600';
+                else if (task.isDelivery) barColor = 'bg-blue-600';
 
                 const barWidth = Math.max(1.5, res.ef - res.es);
                 const baseWidth = Math.max(1.5, baseRes.ef - baseRes.es);
@@ -534,18 +529,18 @@ export const DashboardPage: React.FC = () => {
                   <div
                     key={task.id}
                     onClick={() => setSelectedTaskId(isSelected ? null : task.id)}
-                    className={`flex items-center h-7 rounded-lg cursor-pointer transition-colors px-1 group ${
+                    className={`flex items-center h-7 rounded cursor-pointer transition-colors px-1 ${
                       isSelected
-                        ? 'bg-[#ffb020]/15'
+                        ? 'bg-blue-600/20 border border-blue-500/40'
                         : hit
-                        ? 'bg-red-500/10'
-                        : 'hover:bg-white/[0.04]'
+                        ? 'bg-red-500/10 border border-red-500/20'
+                        : 'hover:bg-slate-800/60'
                     }`}
                   >
-                    {/* Label */}
+                    {/* Task Title */}
                     <div
-                      className={`w-40 text-xs truncate pr-2 shrink-0 font-medium ${
-                        isSelected ? 'text-white font-bold' : 'text-[#8e9ab0] group-hover:text-white'
+                      className={`w-40 text-xs truncate pr-2 shrink-0 ${
+                        isSelected ? 'text-white font-bold' : 'text-slate-300'
                       }`}
                       title={task.name}
                     >
@@ -556,24 +551,22 @@ export const DashboardPage: React.FC = () => {
                     <div className="flex-1 relative h-full">
                       {/* Ghost baseline bar */}
                       <div
-                        className="absolute top-1.5 h-3.5 border border-dashed border-[#8e9ab0]/50 rounded opacity-60 pointer-events-none transition-all duration-500"
+                        className="absolute top-1.5 h-3.5 border border-slate-600/60 rounded bg-slate-800/30 pointer-events-none"
                         style={{
                           left: toPercent(baseRes.es),
                           width: toPercent(baseWidth),
                         }}
                       />
 
-                      {/* Current CPM active bar */}
+                      {/* Current active CPM bar */}
                       <div
-                        className={`absolute top-1.5 h-3.5 rounded text-[10px] font-bold text-black/90 pl-1.5 leading-[14px] whitespace-nowrap transition-all duration-500 shadow-sm ${barColor} ${
-                          hit ? 'ring-2 ring-[#ffb020] shadow-[0_0_12px_rgba(255,176,32,0.8)]' : ''
-                        }`}
+                        className={`absolute top-1.5 h-3.5 rounded text-[10px] font-bold text-white pl-1.5 leading-[14px] whitespace-nowrap transition-all duration-300 ${barColor}`}
                         style={{
                           left: toPercent(res.es),
                           width: toPercent(barWidth),
                         }}
                       >
-                        {hit ? `+${hit.slipDays}d` : res.critical ? '' : `f${res.float}`}
+                        {hit ? `+${hit.slipDays}d` : res.critical ? '' : `Float: ${res.float}d`}
                       </div>
                     </div>
                   </div>
@@ -583,44 +576,43 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Alerts & Notifications (Span 4) */}
-        <div className="md:col-span-4 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] flex items-center gap-1.5">
-              Alerts
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white font-mono">
-                {activeAlerts.length}
-              </span>
+        {/* Schedule Alerts & Risk Log */}
+        <div className="md:col-span-4 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm flex flex-col">
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#232f44]">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              Schedule Risk Alerts
             </h3>
+            <span className="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono border border-slate-700">
+              {activeAlerts.length} items
+            </span>
           </div>
 
           <div className="space-y-2 flex-1 overflow-y-auto max-h-[380px] pr-1">
             {activeAlerts.map((al, idx) => (
               <div
                 key={idx}
-                className="p-2.5 rounded-xl text-xs font-medium border-l-4 transition-all"
-                style={{
-                  borderLeftColor: al.color,
-                  backgroundColor: `${al.color}15`,
-                  color: '#e9edf3',
-                }}
+                className="p-2.5 rounded text-xs border-l-4 bg-[#0f172a] border-[#232f44]"
+                style={{ borderLeftColor: al.color }}
               >
-                {al.text}
+                <div className="font-semibold text-white mb-0.5 flex items-center justify-between">
+                  <span>{al.category}</span>
+                </div>
+                <div className="text-slate-300 leading-relaxed">{al.text}</div>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Row 3: Finish-date distribution (Span 5) + Top Delay Risks (Span 4) + Delay Attribution (Span 3) */}
+      {/* Row 3: Risk Analysis, Critical Index, Delay Causes */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-        {/* Finish-Date Distribution (Span 5) */}
-        <div className="md:col-span-5 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] mb-3">
-            Finish-Date Distribution · 600 Simulations
+        {/* Monte Carlo Completion Histogram */}
+        <div className="md:col-span-5 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm">
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
+            Schedule Completion Risk Distribution (600 Runs)
           </h3>
 
-          <div className="flex items-end gap-1.5 h-36 pt-4">
+          <div className="flex items-end gap-1.5 h-36 pt-4 border-b border-[#232f44]">
             {histData.bins.map((count, i) => {
               const binDay = histData.lo + i * histData.step;
               const isPastDeadline = binDay > targetDeadline;
@@ -629,63 +621,60 @@ export const DashboardPage: React.FC = () => {
               return (
                 <div
                   key={i}
-                  title={`Day ${Math.round(binDay)}: ${count} runs`}
-                  style={{ height: `${Math.max(4, heightPct)}%` }}
-                  className={`flex-1 rounded-t transition-all duration-700 cursor-pointer ${
-                    isPastDeadline
-                      ? 'bg-gradient-to-t from-[#7a1a1a] to-[#ff4d4d]'
-                      : 'bg-gradient-to-t from-[#1b4d8a] to-[#4da3ff]'
+                  title={`Day ${Math.round(binDay)}: ${count} simulated runs`}
+                  style={{ height: `${Math.max(6, heightPct)}%` }}
+                  className={`flex-1 rounded-t transition-all ${
+                    isPastDeadline ? 'bg-red-600' : 'bg-blue-600'
                   }`}
                 />
               );
             })}
           </div>
 
-          <div className="flex justify-between text-xs text-[#8e9ab0] mt-2 font-mono">
+          <div className="flex justify-between text-xs text-slate-400 mt-2 font-mono">
             <span>Day {histData.lo}</span>
-            <span className="text-[#ff4d4d] font-bold">▲ Day {targetDeadline} (Deadline)</span>
+            <span className="text-red-400 font-bold">Target: Day {targetDeadline}</span>
             <span>Day {histData.hi}</span>
           </div>
         </div>
 
-        {/* Top Delay Risks / Criticality Index (Span 4) */}
-        <div className="md:col-span-4 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] mb-3">
-            Top Delay Risks · Criticality Index
+        {/* Criticality Index (Task Delay Vulnerability) */}
+        <div className="md:col-span-4 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm">
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
+            Task Delay Risk Index
           </h3>
 
           <div className="space-y-2">
             {topRisks.map(({ task, score }) => (
               <div
                 key={task.id}
-                className="grid grid-cols-12 gap-2 items-center text-xs py-1.5 border-b border-white/5"
+                className="grid grid-cols-12 gap-2 items-center text-xs py-1 border-b border-[#232f44] last:border-0"
               >
-                <span className="col-span-6 truncate font-medium text-slate-300" title={task.name}>
+                <span className="col-span-6 truncate text-slate-300 font-medium" title={task.name}>
                   {task.name.replace('📦 Material Arrival: ', '📦 ')}
                 </span>
-                <div className="col-span-4 h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="col-span-4 h-2 bg-slate-800 rounded overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#ffb020] to-[#ff4d4d] rounded-full transition-all duration-700"
+                    className="h-full bg-amber-500 rounded"
                     style={{ width: `${Math.round(score * 100)}%` }}
                   />
                 </div>
-                <b className="col-span-2 text-right font-mono text-white">
+                <span className="col-span-2 text-right font-mono font-bold text-white">
                   {Math.round(score * 100)}%
-                </b>
+                </span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Delay Attribution (Span 3) */}
-        <div className="md:col-span-3 bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
+        {/* Active Delays Log */}
+        <div className="md:col-span-3 bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] mb-3">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-2">
               Delay Attribution
             </h3>
 
-            {/* Stacked Bar */}
-            <div className="h-6 rounded-lg overflow-hidden flex bg-white/10 mb-3">
+            <div className="h-5 rounded overflow-hidden flex bg-slate-800 mb-3 border border-slate-700">
               {Object.entries(delayAttribution.causes).map(([key, item]) => {
                 const widthPct =
                   delayAttribution.total > 0
@@ -696,48 +685,46 @@ export const DashboardPage: React.FC = () => {
                   <div
                     key={key}
                     style={{ width: `${widthPct}%`, backgroundColor: item.color }}
-                    title={`${item.label}: ${item.days}d`}
-                    className="h-full transition-all duration-500"
+                    title={`${item.label}: ${item.days} days`}
+                    className="h-full"
                   />
                 );
               })}
             </div>
 
-            {/* Legend Chips */}
-            <div className="flex flex-wrap gap-2 text-xs text-[#8e9ab0] mb-4">
+            <div className="space-y-1 text-xs text-slate-300 mb-3">
               {Object.entries(delayAttribution.causes).map(([key, item]) => (
-                <span key={key} className="flex items-center gap-1.5 text-slate-300">
-                  <span
-                    className="w-2.5 h-2.5 rounded-sm"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  {item.label} <strong>{item.days}d</strong>
-                </span>
+                <div key={key} className="flex items-center justify-between text-[11px]">
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-sm" style={{ backgroundColor: item.color }} />
+                    {item.label}
+                  </span>
+                  <span className="font-mono font-bold">{item.days}d</span>
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Delays list with remove button */}
-          <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+          <div className="space-y-1 max-h-36 overflow-y-auto pt-2 border-t border-[#232f44]">
             {delays.length === 0 ? (
-              <div className="text-xs text-[#8e9ab0] italic">No active delays logged</div>
+              <div className="text-xs text-slate-500 italic">No active delays logged</div>
             ) : (
               delays.map((d) => {
                 const t = tasks.find((item) => item.id === d.taskId);
                 return (
                   <div
                     key={d.id}
-                    className="flex items-center justify-between text-xs py-1 px-2 rounded-lg bg-white/5"
+                    className="flex items-center justify-between text-xs p-1.5 rounded bg-[#0f172a] border border-[#232f44]"
                   >
-                    <span className="truncate pr-2 text-slate-300">
-                      {t?.name.replace('📦 Material Arrival: ', '')} +{d.days}d
+                    <span className="truncate text-slate-300 pr-1">
+                      {t?.name.replace('📦 Material Arrival: ', '')} (+{d.days}d)
                     </span>
                     <button
                       onClick={() => removeDelay(d.id)}
-                      className="text-slate-400 hover:text-[#ff4d4d] transition-colors p-1"
+                      className="text-slate-400 hover:text-red-400 p-0.5 cursor-pointer"
                       title="Remove delay"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 );
@@ -747,15 +734,20 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Row 4: Recovery Optimizer (Span 12) */}
-      <div className="bg-[#121926] border border-white/10 rounded-2xl p-5 shadow-lg">
-        <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#8e9ab0] mb-3">
-          Recovery Optimizer · Ranked by days saved per ₹ lakh
-        </h3>
+      {/* Recovery Plan & Schedule Compression */}
+      <div className="bg-[#141c2b] border border-[#232f44] rounded-md p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-[#232f44]">
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            Schedule Recovery Plan (Ranked by Days Saved per ₹ Lakh)
+          </h3>
+          <span className="text-xs text-slate-400">
+            Recommended crash & expedite options
+          </span>
+        </div>
 
         {recoveryActions.length === 0 ? (
-          <div className="text-xs text-[#8e9ab0] py-4 text-center">
-            No action shortens the schedule right now: critical path is already optimal.
+          <div className="text-xs text-slate-400 py-4 text-center">
+            No recovery action needed: critical path is optimal.
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -765,33 +757,41 @@ export const DashboardPage: React.FC = () => {
               return (
                 <div
                   key={action.id}
-                  className={`flex flex-col justify-between p-3.5 rounded-xl border transition-all ${
+                  className={`flex flex-col justify-between p-3 rounded border transition-colors ${
                     isBest
-                      ? 'border-[#35d07f]/50 bg-[#35d07f]/5'
-                      : 'border-white/10 bg-white/[0.02]'
+                      ? 'border-emerald-500/50 bg-emerald-500/10'
+                      : 'border-[#232f44] bg-[#0f172a]'
                   }`}
                 >
                   <div className="mb-3">
-                    <b className="text-xs text-white block">
-                      {isBest && <span className="text-[#35d07f] mr-1">⭐</span>}
-                      {action.title}
-                    </b>
-                    <small className="text-[11px] text-[#8e9ab0] block mt-1">
-                      {action.kind} · saves <strong className="text-white">{action.daysSaved}d</strong> · ₹
-                      {action.costInLakhs.toFixed(2)}L ·{' '}
-                      <span className="text-amber-400 font-mono">{action.roi} d/₹L</span>
-                    </small>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold text-white">
+                        {action.title}
+                      </span>
+                      {isBest && (
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500 text-black font-bold uppercase">
+                          Best ROI
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Saves <strong className="text-white font-mono">{action.daysSaved}d</strong> · Cost: ₹
+                      {action.costInLakhs.toFixed(2)}L
+                    </p>
+                    <div className="text-[10px] text-amber-400 font-mono mt-1">
+                      Efficiency: {action.roi} days saved / ₹Lakh
+                    </div>
                   </div>
 
                   <button
                     onClick={() => handleApplyRecovery(action)}
-                    className={`w-full py-1.5 px-3 rounded-xl text-xs font-bold transition-transform hover:-translate-y-0.5 ${
+                    className={`w-full py-1.5 px-3 rounded text-xs font-bold transition-colors cursor-pointer ${
                       isBest
-                        ? 'bg-gradient-to-r from-[#ffb020] to-[#ff4d4d] text-black shadow-md shadow-red-500/20'
-                        : 'bg-white/10 text-white hover:bg-white/20'
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
                     }`}
                   >
-                    Apply Action
+                    Apply Recovery Action
                   </button>
                 </div>
               );
