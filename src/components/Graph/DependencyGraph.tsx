@@ -90,37 +90,37 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
   const selectedTask = tasks.find((t) => t.id === selectedTaskId);
 
   return (
-    <div className="flex flex-col h-full bg-[#0d121c] border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative">
+    <div className="flex flex-col h-full bg-[#141c2b] border border-[#232f44] rounded-md overflow-hidden shadow-sm relative font-sans">
       {/* Top Controls Toolbar */}
-      <div className="p-3 px-5 bg-[#121823]/90 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs z-10 backdrop-blur-md">
+      <div className="p-2.5 px-4 bg-[#0f172a] border-b border-[#232f44] flex flex-wrap items-center justify-between gap-3 text-xs z-10">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 font-bold text-white">
-            <GitFork className="w-4 h-4 text-[#4da3ff]" />
-            <span>Dependency Network & Blast Radar</span>
+            <GitFork className="w-4 h-4 text-blue-400" />
+            <span>Dependency Network</span>
           </div>
 
-          <span className="text-[#8e9ab0]">|</span>
+          <span className="text-slate-600">|</span>
 
           {/* Active blast summary if selected */}
           {blastRadius && selectedTask ? (
-            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded-xl text-amber-300 font-medium">
-              <Zap className="w-3.5 h-3.5 text-[#ffb020] animate-pulse" />
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 px-3 py-1 rounded text-amber-300 font-medium">
+              <Zap className="w-3.5 h-3.5 text-amber-400" />
               <span>
-                Simulated <strong>{selectedTask.name}</strong> +5d delay ➔{' '}
-                <strong>{blastRadius.affectedCount}</strong> downstream tasks slipped
-                {blastRadius.projectSlipDays > 0 ? ` (+${blastRadius.projectSlipDays}d overall)` : ' (absorbed)'}
+                Simulated delay on <strong>{selectedTask.name}</strong> (+5d) ➔{' '}
+                <strong>{blastRadius.affectedCount}</strong> dependent tasks impacted
+                {blastRadius.projectSlipDays > 0 ? ` (+${blastRadius.projectSlipDays}d finish slip)` : ' (absorbed by float)'}
               </span>
               <button
                 onClick={() => onSelectTask(null)}
-                className="text-amber-400 hover:text-white ml-1 p-0.5"
+                className="text-amber-400 hover:text-white ml-1 p-0.5 cursor-pointer"
                 title="Clear selection"
               >
                 ✕
               </button>
             </div>
           ) : (
-            <span className="text-[#8e9ab0] italic">
-              Click any task card to trace its downstream delay blast radius
+            <span className="text-slate-400 text-xs">
+              Click any task card to calculate downstream schedule impact
             </span>
           )}
         </div>
@@ -130,19 +130,19 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
           {/* Orientation switch */}
           <button
             onClick={() => setDirection((d) => (d === 'LR' ? 'TB' : 'LR'))}
-            className="px-3 py-1.5 rounded-xl bg-[#0b0f16] border border-white/10 text-slate-300 hover:text-white flex items-center gap-1.5 transition-all text-xs"
+            className="px-3 py-1.5 rounded bg-[#141c2b] border border-[#232f44] text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors text-xs cursor-pointer"
           >
             <ArrowRightLeft className="w-3.5 h-3.5" />
-            <span>Layout: {direction === 'LR' ? 'Horizontal (Left-Right)' : 'Vertical (Top-Down)'}</span>
+            <span>Layout: {direction === 'LR' ? 'Horizontal (Left-to-Right)' : 'Vertical (Top-to-Bottom)'}</span>
           </button>
 
           {selectedTaskId && (
             <button
               onClick={() => onSelectTask(null)}
-              className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[#8e9ab0] hover:text-white flex items-center gap-1.5 transition-all text-xs"
+              className="px-3 py-1.5 rounded bg-slate-800 border border-slate-700 text-slate-300 hover:text-white flex items-center gap-1.5 transition-colors text-xs cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
-              Reset Selection
+              Clear Selection
             </button>
           )}
         </div>
@@ -160,25 +160,25 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
           minZoom={0.2}
           maxZoom={1.5}
           proOptions={{ hideAttribution: true }}
-          className="bg-[#0b0f16]"
+          className="bg-[#0c1017]"
         >
           <Background
-            color="#2a3547"
-            gap={20}
-            size={1.5}
+            color="#232f44"
+            gap={24}
+            size={1}
             variant={BackgroundVariant.Dots}
           />
-          <Controls className="!bg-[#121926] !border-white/10 !rounded-xl !overflow-hidden [&>button]:!bg-[#121926] [&>button]:!border-white/10 [&>button]:!text-white hover:[&>button]:!bg-white/10" />
+          <Controls className="!bg-[#0f172a] !border-[#232f44] !rounded !overflow-hidden [&>button]:!bg-[#0f172a] [&>button]:!border-[#232f44] [&>button]:!text-white hover:[&>button]:!bg-slate-800" />
           <MiniMap
             nodeStrokeColor="#ffffff"
             nodeColor={(node: any) => {
-              if (node.data?.cpm?.critical) return '#ff4d4d';
-              if (node.data?.cpm?.nearCritical) return '#ffb020';
-              if (node.data?.task?.isDelivery) return '#4da3ff';
-              return '#35d07f';
+              if (node.data?.cpm?.critical) return '#ef4444';
+              if (node.data?.cpm?.nearCritical) return '#f59e0b';
+              if (node.data?.task?.isDelivery) return '#3b82f6';
+              return '#22c55e';
             }}
-            maskColor="rgba(11, 15, 22, 0.85)"
-            className="!bg-[#121926] !border !border-white/10 !rounded-xl overflow-hidden"
+            maskColor="rgba(12, 16, 23, 0.85)"
+            className="!bg-[#0f172a] !border !border-[#232f44] !rounded overflow-hidden"
           />
         </ReactFlow>
       </div>
