@@ -52,6 +52,7 @@ export interface Task {
   trade: string;
   site: string;
   contractorId?: string;
+  assignedResource?: string;
   durationMin: number;
   durationLikely: number;
   durationMax: number;
@@ -70,6 +71,23 @@ export interface Project {
   startDate: string; // ISO date string e.g. "2026-10-01"
   targetFinish: number; // day offset target
   statusDay: number; // today's day offset
+  location?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface WeatherForecastDay {
+  date: string;
+  weatherCode: number;
+  precipitationMm: number;
+  precipitationProbability: number;
+  maxWindKmh: number;
+}
+
+export interface WeatherDelaySuggestion {
+  taskId: string;
+  days: number;
+  reason: string;
 }
 
 export interface CPMTaskResult {

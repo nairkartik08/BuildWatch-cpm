@@ -6,8 +6,10 @@ import {
   GitFork,
   CheckSquare,
   FileBarChart2,
-  Radio,
+  Menu,
+  X,
   ArrowLeft,
+  ChevronDown,
 } from 'lucide-react';
 import { GlobalSearchBar } from './GlobalSearchBar';
 import { AlertsPanel } from '../Collab/AlertsPanel';
@@ -22,37 +24,52 @@ const navItems = [
 
 export const Layout: React.FC = () => {
   const location = useLocation();
+  const [isNavOpen, setIsNavOpen] = React.useState(false);
+
+  const pageTitle = navItems.find((item) =>
+    item.end ? location.pathname === item.to : location.pathname.startsWith(item.to)
+  )?.label ?? 'Project overview';
 
   return (
-    <div className="flex h-screen w-full bg-[#0b0f16] text-[#e9edf3] overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-white/10 bg-[#0d121c]/95 flex flex-col shrink-0 z-20">
-        {/* Brand */}
-        <div className="h-16 px-5 border-b border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 font-bold tracking-tight text-sm">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff4d4d] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#ff4d4d]"></span>
-            </span>
-            <span className="bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent font-black tracking-wide">
-              CRITICAL PATH RADAR
-            </span>
+    <div className="app-shell flex h-screen w-full overflow-hidden">
+      {isNavOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-30 bg-black/45 lg:hidden"
+          onClick={() => setIsNavOpen(false)}
+        />
+      )}
+      <aside className={`app-sidebar fixed inset-y-0 left-0 z-40 flex w-72 shrink-0 flex-col transition-transform lg:static lg:translate-x-0 ${isNavOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex h-[72px] items-center justify-between border-b border-white/10 px-5">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#ffb020] text-sm font-black text-[#111827]">CP</span>
+            <div>
+              <div className="text-sm font-bold text-white">Critical Path</div>
+              <div className="text-[11px] text-[#8e9ab0]">Project control room</div>
+            </div>
+          </div>
+          <button type="button" onClick={() => setIsNavOpen(false)} className="app-icon-button lg:hidden" aria-label="Close navigation">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mx-3 mt-4 border border-white/10 bg-white/[0.035] p-3">
+          <button type="button" className="flex w-full items-center justify-between text-left" aria-label="Current project">
+            <div>
+              <div className="text-xs font-semibold text-white">Hospital Wing A</div>
+              <div className="mt-0.5 text-[11px] text-[#8e9ab0]">Foundation to envelope</div>
+            </div>
+            <ChevronDown className="h-4 w-4 text-[#8e9ab0]" />
+          </button>
+          <div className="mt-3 flex items-center gap-2 border-t border-white/10 pt-3 text-[11px] text-[#b7c0cf]">
+            <span className="h-2 w-2 rounded-full bg-[#35d07f]" />
+            Tracking day 12
           </div>
         </div>
 
-        {/* Project Selector / Status badge */}
-        <div className="p-4 border-b border-white/5 bg-[#121823]/50">
-          <div className="flex items-center justify-between text-xs text-[#9aa6b8] mb-1">
-            <span>Hospital Wing B</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#ff4d4d]/20 text-[#ff4d4d] border border-[#ff4d4d]/30">
-              LIVE RADAR
-            </span>
-          </div>
-          <div className="text-xs font-medium text-slate-300">Phase 1: Foundation to Envelope</div>
-        </div>
-
-        {/* Navigation Links */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
+          <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#657084]">Workspace</div>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.end
@@ -63,62 +80,49 @@ export const Layout: React.FC = () => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                onClick={() => setIsNavOpen(false)}
+                className={`app-nav-link flex items-center gap-3 px-3 py-2.5 text-xs font-semibold transition-colors ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#ffb020]/20 to-[#ff4d4d]/20 text-[#ffb020] border border-[#ffb020]/40 shadow-sm shadow-[#ffb020]/10'
-                    : 'text-[#9aa6b8] hover:text-white hover:bg-white/5 border border-transparent'
+                    ? 'is-active text-white'
+                    : 'text-[#9aa6b8] hover:bg-white/[0.05] hover:text-white'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-[#ffb020]' : 'text-[#9aa6b8]'}`} />
+                <Icon className={`h-4 w-4 ${isActive ? 'text-[#ffb020]' : 'text-[#9aa6b8]'}`} />
                 <span>{item.label}</span>
               </NavLink>
             );
           })}
         </nav>
 
-        {/* Footer / Landing switch */}
-        <div className="p-3 border-t border-white/10 space-y-2">
+        <div className="border-t border-white/10 p-3">
           <NavLink
             to="/"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-[#9aa6b8] hover:text-white hover:bg-white/5 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#9aa6b8] transition-colors hover:bg-white/[0.05] hover:text-white"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to 3D Landing</span>
+            <span>Back to landing page</span>
           </NavLink>
-          <div className="px-3 py-2 rounded-xl bg-white/[0.03] border border-white/5 text-[11px] text-[#9aa6b8] flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <Radio className="w-3 h-3 text-[#35d07f] animate-pulse" />
-              Engine Online
-            </span>
-            <span className="font-mono text-[10px] text-slate-400">v0.1</span>
-          </div>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-hidden bg-[#0b0f16]">
-        {/* Top Header */}
-        <header className="h-16 px-6 border-b border-white/10 flex items-center justify-between bg-[#0d121c]/60 backdrop-blur-md shrink-0">
-          <div className="flex items-center gap-3">
-            <h1 className="text-sm font-semibold tracking-wide text-white capitalize">
-              {location.pathname === '/app'
-                ? 'Project Overview & Critical Delay Risks'
-                : location.pathname.replace('/app/', '').replace('-', ' ') + ' View'}
-            </h1>
+      <main className="app-main flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="app-header flex h-[72px] shrink-0 items-center justify-between border-b border-white/10 px-4 sm:px-6">
+          <div className="flex min-w-0 items-center gap-3">
+            <button type="button" onClick={() => setIsNavOpen(true)} className="app-icon-button lg:hidden" aria-label="Open navigation">
+              <Menu className="h-4 w-4" />
+            </button>
+            <div className="min-w-0">
+              <div className="text-[11px] text-[#8e9ab0]">Hospital Wing A</div>
+              <h1 className="truncate text-sm font-semibold text-white">{pageTitle}</h1>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <GlobalSearchBar />
             <AlertsPanel />
-            <div className="flex items-center gap-2 bg-[#121823] border border-white/10 px-3 py-1.5 rounded-lg text-xs">
-              <span className="w-2 h-2 rounded-full bg-[#35d07f]" />
-              <span className="text-[#9aa6b8]">Day Offset:</span>
-              <span className="font-bold text-white">Day 12 (Today)</span>
-            </div>
           </div>
         </header>
 
-        {/* View body */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="app-content flex-1 overflow-auto p-4 sm:p-6">
           <Outlet />
         </div>
       </main>

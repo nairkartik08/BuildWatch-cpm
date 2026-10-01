@@ -137,6 +137,20 @@ describe('CPM Engine Tests', () => {
     expect(result.tasks['C'].critical).toBe(false);
   });
 
+  it('keeps the critical path when the contractual deadline includes buffer', () => {
+    const tasks: Task[] = [
+      { id: 'A', name: 'Start', trade: 'General', site: 'Site', durationMin: 3, durationLikely: 3, durationMax: 3, predecessors: [], outdoor: false, percentComplete: 0 },
+      { id: 'B', name: 'Finish', trade: 'General', site: 'Site', durationMin: 4, durationLikely: 4, durationMax: 4, predecessors: ['A'], outdoor: false, percentComplete: 0 },
+    ];
+
+    const result = calculateCPM({ tasks, targetFinish: 14 });
+
+    expect(result.projectFinish).toBe(7);
+    expect(result.scheduleVariance).toBe(-7);
+    expect(result.criticalPath).toEqual(['A', 'B']);
+    expect(result.tasks.A.float).toBe(0);
+  });
+
   it('should detect circular dependencies and throw ScheduleCycleError', () => {
     const cyclicTasks: Task[] = [
       {

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useProjectStore } from '../store';
 import {
   calculateCPM,
@@ -13,7 +13,10 @@ import {
   TrendingDown,
   CheckCircle2,
   Trash2,
+  Settings2,
 } from 'lucide-react';
+import { ProjectSettingsModal } from '../components/common/ProjectSettingsModal';
+import { WeatherRiskPanel } from '../components/Dashboard/WeatherRiskPanel';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -27,12 +30,24 @@ export const DashboardPage: React.FC = () => {
     injectSteelDelayDemo,
     resetDemo,
     updateTask,
+    updateProject,
+    weatherForecast,
+    weatherStatus,
+    weatherUpdatedAt,
+    weatherError,
+    refreshWeatherForecast,
+    applyWeatherDelaySuggestions,
   } = useProjectStore();
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [delayInputTaskId, setDelayInputTaskId] = useState<string>(tasks[0]?.id || '');
   const [delayDays, setDelayDays] = useState<number>(5);
   const [delayCause, setDelayCause] = useState<'delivery' | 'weather' | 'resource' | 'other'>('delivery');
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    if (weatherStatus === 'idle') refreshWeatherForecast();
+  }, [weatherStatus, refreshWeatherForecast]);
 
   // 1. Current CPM calculations
   const cpmCurrent = useMemo(() => {
@@ -274,6 +289,15 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSettingsOpen(true)}
+            className="p-1.5 rounded-lg border border-white/10 text-[#8e9ab0] hover:bg-white/5 hover:text-white"
+            title="Project settings"
+            aria-label="Project settings"
+          >
+            <Settings2 className="w-3.5 h-3.5" />
+          </button>
           {/* Select task to delay */}
           <select
             value={delayInputTaskId}
@@ -342,6 +366,18 @@ export const DashboardPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <WeatherRiskPanel
+        project={project}
+        tasks={tasks}
+        cpm={cpmCurrent}
+        forecast={weatherForecast}
+        status={weatherStatus}
+        updatedAt={weatherUpdatedAt}
+        error={weatherError}
+        onRefresh={refreshWeatherForecast}
+        onApply={applyWeatherDelaySuggestions}
+      />
 
       {/* Grid: 4 Top KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -799,6 +835,16 @@ export const DashboardPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <ProjectSettingsModal
+        isOpen={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        project={project}
+        onSave={(updates) => {
+          updateProject(updates);
+          setTimeout(() => refreshWeatherForecast(), 0);
+        }}
+      />
     </div>
   );
 };

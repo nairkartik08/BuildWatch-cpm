@@ -22,6 +22,84 @@ body {
   overflow-x: hidden;
 }
 
+/* Application workspace only. Landing page keeps its existing visual system. */
+.app-shell {
+  --app-bg: #0d1118;
+  --app-panel: #151b25;
+  --app-panel-raised: #1a2230;
+  --app-border: rgba(203, 213, 225, 0.12);
+  background: var(--app-bg);
+  color: #e6eaf0;
+}
+
+.app-sidebar {
+  background: #101620;
+  border-right: 1px solid var(--app-border);
+}
+
+.app-main {
+  background: #0d1118;
+}
+
+.app-header {
+  background: rgba(16, 22, 32, 0.92);
+}
+
+.app-content {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.app-nav-link {
+  border-left: 2px solid transparent;
+}
+
+.app-nav-link.is-active {
+  border-left-color: #ffb020;
+  background: rgba(255, 176, 32, 0.1);
+}
+
+.app-icon-button {
+  display: inline-flex;
+  height: 34px;
+  width: 34px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #b7c0cf;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.app-icon-button:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: white;
+}
+
+.app-shell .rounded-2xl {
+  border-radius: 8px;
+}
+
+.app-shell .rounded-xl {
+  border-radius: 6px;
+}
+
+.app-shell .bg-\[\#121926\],
+.app-shell .bg-\[\#121823\] {
+  background-color: var(--app-panel);
+}
+
+.app-shell .shadow-lg,
+.app-shell .shadow-xl,
+.app-shell .shadow-2xl {
+  box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  .app-content { padding-bottom: 2rem; }
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
