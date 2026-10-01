@@ -208,8 +208,10 @@ export function calculateCPM(params: {
   projectFinish = Math.round(projectFinish * 10) / 10;
 
   // 3. Backward Pass: Latest Finish (LF) and Latest Start (LS)
-  // Base latest finish from max(projectFinish, targetFinish)
-  const baselineFinish = Math.max(projectFinish, targetFinish);
+  // Critical-path float is measured against the calculated project completion,
+  // never against a later contractual deadline. The deadline is used separately
+  // for variance, otherwise a healthy buffer would incorrectly make every task non-critical.
+  const baselineFinish = projectFinish;
   const lfMap = new Map<string, number>();
   const lsMap = new Map<string, number>();
 

@@ -38,6 +38,9 @@ export const TasksPage: React.FC = () => {
 
   const [search, setSearch] = useState('');
   const [selectedTrade, setSelectedTrade] = useState<string>('all');
+  const [selectedSite, setSelectedSite] = useState<string>('all');
+  const [selectedContractor, setSelectedContractor] = useState<string>('all');
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'not_started' | 'in_progress' | 'completed'>('all');
   const [filterType, setFilterType] = useState<'all' | 'delivery' | 'task'>('all');
 
   // Modal states
@@ -54,6 +57,7 @@ export const TasksPage: React.FC = () => {
 
   const contractorMap = new Map(contractors.map((c) => [c.id, c]));
   const trades = Array.from(new Set(tasks.map((t) => t.trade)));
+  const sites = Array.from(new Set(tasks.map((t) => t.site)));
 
   const filteredTasks = tasks.filter((t) => {
     const matchesSearch =
@@ -62,12 +66,16 @@ export const TasksPage: React.FC = () => {
       t.trade.toLowerCase().includes(search.toLowerCase());
 
     const matchesTrade = selectedTrade === 'all' || t.trade === selectedTrade;
+    const matchesSite = selectedSite === 'all' || t.site === selectedSite;
+    const matchesContractor = selectedContractor === 'all' || t.contractorId === selectedContractor;
+    const taskStatus = t.percentComplete >= 100 ? 'completed' : t.percentComplete > 0 ? 'in_progress' : 'not_started';
+    const matchesStatus = selectedStatus === 'all' || taskStatus === selectedStatus;
     const matchesType =
       filterType === 'all' ||
       (filterType === 'delivery' && t.isDelivery) ||
       (filterType === 'task' && !t.isDelivery);
 
-    return matchesSearch && matchesTrade && matchesType;
+    return matchesSearch && matchesTrade && matchesSite && matchesContractor && matchesStatus && matchesType;
   });
 
   const getTaskDelayDays = (taskId: string) => {
@@ -105,7 +113,7 @@ export const TasksPage: React.FC = () => {
         </div>
 
         {/* Action buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => {
               setTaskToEdit(null);
@@ -230,6 +238,38 @@ export const TasksPage: React.FC = () => {
               </option>
             ))}
           </select>
+
+          <select
+            value={selectedSite}
+            onChange={(e) => setSelectedSite(e.target.value)}
+            aria-label="Filter by site"
+            className="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-[#ffb020]"
+          >
+            <option value="all">All Sites</option>
+            {sites.map((site) => <option key={site} value={site}>{site}</option>)}
+          </select>
+
+          <select
+            value={selectedContractor}
+            onChange={(e) => setSelectedContractor(e.target.value)}
+            aria-label="Filter by contractor"
+            className="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-[#ffb020]"
+          >
+            <option value="all">All Contractors</option>
+            {contractors.map((contractor) => <option key={contractor.id} value={contractor.id}>{contractor.name}</option>)}
+          </select>
+
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value as typeof selectedStatus)}
+            aria-label="Filter by status"
+            className="bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-[#ffb020]"
+          >
+            <option value="all">All Statuses</option>
+            <option value="not_started">Not started</option>
+            <option value="in_progress">In progress</option>
+            <option value="completed">Completed</option>
+          </select>
         </div>
       </div>
 
@@ -312,6 +352,7 @@ export const TasksPage: React.FC = () => {
                               {contractor.reliability}x
                             </span>
                           </div>
+                          {t.assignedResource && <div className="mt-0.5 text-[10px] text-slate-400">Crew: {t.assignedResource}</div>}
                         </div>
                       ) : (
                         <span className="text-slate-500 italic">Self-delivered</span>
@@ -465,6 +506,7 @@ export const TasksPage: React.FC = () => {
       />
 
       <TaskCommentsModal
+        key={`${taskForComments?.id ?? 'none'}-${commentsModalOpen}`}
         isOpen={commentsModalOpen}
         onClose={() => setCommentsModalOpen(false)}
         task={taskForComments}
@@ -483,6 +525,7 @@ export const TasksPage: React.FC = () => {
       />
 
       <ProgressModal
+        key={`${taskForProgress?.id ?? 'none'}-${progressModalOpen}`}
         isOpen={progressModalOpen}
         onClose={() => setProgressModalOpen(false)}
         task={taskForProgress}

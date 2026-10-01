@@ -26,6 +26,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
   const [trade, setTrade] = useState(taskToEdit?.trade || 'Civil');
   const [site, setSite] = useState(taskToEdit?.site || 'Wing B');
   const [contractorId, setContractorId] = useState<string>(taskToEdit?.contractorId || contractors[0]?.id || '');
+  const [assignedResource, setAssignedResource] = useState(taskToEdit?.assignedResource || '');
   const [durationMin, setDurationMin] = useState<number>(taskToEdit?.durationMin ?? 3);
   const [durationLikely, setDurationLikely] = useState<number>(taskToEdit?.durationLikely ?? 5);
   const [durationMax, setDurationMax] = useState<number>(taskToEdit?.durationMax ?? 8);
@@ -41,6 +42,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
       setTrade(taskToEdit.trade);
       setSite(taskToEdit.site);
       setContractorId(taskToEdit.contractorId || '');
+      setAssignedResource(taskToEdit.assignedResource || '');
       setDurationMin(taskToEdit.durationMin);
       setDurationLikely(taskToEdit.durationLikely);
       setDurationMax(taskToEdit.durationMax);
@@ -51,6 +53,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
       setTrade('Civil');
       setSite('Wing B');
       setContractorId(contractors[0]?.id || '');
+      setAssignedResource('');
       setDurationMin(3);
       setDurationLikely(5);
       setDurationMax(8);
@@ -89,6 +92,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
       trade: trade.trim(),
       site: site.trim(),
       contractorId: contractorId || undefined,
+      assignedResource: assignedResource.trim() || undefined,
       durationMin: Math.max(1, durationMin),
       durationLikely: Math.max(durationMin, durationLikely),
       durationMax: Math.max(durationLikely, durationMax),
@@ -191,7 +195,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
             </div>
           </div>
 
-          {/* Contractor & Outdoor */}
+          {/* Contractor, resource and weather exposure */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">Contractor</label>
@@ -209,7 +213,18 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
               </select>
             </div>
 
-            <div className="flex items-center pt-5">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">Assigned resource / crew</label>
+              <input
+                type="text"
+                value={assignedResource}
+                onChange={(e) => setAssignedResource(e.target.value)}
+                placeholder="e.g. 8-person formwork crew"
+                className="w-full bg-[#0b0f16] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-[#ffb020]"
+              />
+            </div>
+
+            <div className="col-span-2 flex items-center">
               <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
                 <input
                   type="checkbox"

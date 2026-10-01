@@ -6,3 +6,4 @@ export * from './blast';
 export * from './monteCarlo';
 export * from './recovery';
 export * from './alerts';
+export * from './weather';

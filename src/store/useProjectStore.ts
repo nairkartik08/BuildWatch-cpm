@@ -1,6 +1,16 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Project, Task, Delivery, Contractor, DelayEvent, TaskComment } from '../engine/types';
+import type {
+  Project,
+  Task,
+  Delivery,
+  Contractor,
+  DelayEvent,
+  TaskComment,
+  WeatherDelaySuggestion,
+  WeatherForecastDay,
+} from '../engine/types';
+import { fetchProjectWeatherForecast } from '../services/weather';
 import {
   initialProject,
   initialTasks,
@@ -17,6 +27,10 @@ interface ProjectState {
   contractors: Contractor[];
   delays: DelayEvent[];
   comments: TaskComment[];
+  weatherForecast: WeatherForecastDay[];
+  weatherStatus: 'idle' | 'loading' | 'ready' | 'error';
+  weatherUpdatedAt: string | null;
+  weatherError: string | null;
   selectedTaskId: string | null;
   currentUserRole: 'manager' | 'contractor';
 
@@ -24,6 +38,7 @@ interface ProjectState {
   addTask: (task: Task) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   deleteTask: (id: string) => void;
+  updateProject: (updates: Partial<Project>) => void;
 
   // Delay actions
   addDelay: (delay: Omit<DelayEvent, 'id' | 'createdAt'>) => void;
@@ -31,6 +46,8 @@ interface ProjectState {
 
   // Delivery actions
   updateDelivery: (id: string, updates: Partial<Delivery>) => void;
+  refreshWeatherForecast: () => Promise<void>;
+  applyWeatherDelaySuggestions: (suggestions: WeatherDelaySuggestion[]) => void;
 
   // Comment actions
   addComment: (comment: Omit<TaskComment, 'id' | 'createdAt'>) => void;
@@ -53,6 +70,10 @@ export const useProjectStore = create<ProjectState>()(
       contractors: initialContractors,
       delays: initialDelays,
       comments: initialComments,
+      weatherForecast: [],
+      weatherStatus: 'idle',
+      weatherUpdatedAt: null,
+      weatherError: null,
       selectedTaskId: null,
       currentUserRole: 'manager',
 
@@ -78,6 +99,9 @@ export const useProjectStore = create<ProjectState>()(
           selectedTaskId: state.selectedTaskId === id ? null : state.selectedTaskId,
         })),
 
+      updateProject: (updates) =>
+        set((state) => ({ project: { ...state.project, ...updates } })),
+
       addDelay: (delayData) => {
         const id = `del-${Date.now()}`;
         const newDelay: DelayEvent = {
@@ -102,12 +126,14 @@ export const useProjectStore = create<ProjectState>()(
             d.id === id ? { ...d, ...updates } : d
           );
 
-          // Synchronize delivery milestone task if expectedArrival changed
+          // Keep material-arrival milestones consistent with edits to the delivery record.
           const nextTasks = state.tasks.map((t) => {
-            if (t.deliveryId === id && updates.expectedArrival !== undefined) {
+            if (t.deliveryId === id) {
               return {
                 ...t,
-                // delivery task earliest day follows arrival
+                percentComplete: updates.actualArrival !== undefined ? 100 : t.percentComplete,
+                actualStart: updates.actualArrival ?? t.actualStart,
+                actualFinish: updates.actualArrival ?? t.actualFinish,
               };
             }
             return t;
@@ -117,6 +143,47 @@ export const useProjectStore = create<ProjectState>()(
             deliveries: nextDeliveries,
             tasks: nextTasks,
           };
+        }),
+
+      refreshWeatherForecast: async () => {
+        const { project } = useProjectStore.getState();
+        const latitude = project.latitude ?? 18.5204;
+        const longitude = project.longitude ?? 73.8567;
+        set({ weatherStatus: 'loading', weatherError: null });
+        try {
+          const weatherForecast = await fetchProjectWeatherForecast(latitude, longitude);
+          set({
+            weatherForecast,
+            weatherStatus: 'ready',
+            weatherUpdatedAt: new Date().toISOString(),
+            weatherError: null,
+          });
+        } catch (error) {
+          set({
+            weatherStatus: 'error',
+            weatherError: error instanceof Error ? error.message : 'Weather forecast could not be loaded.',
+          });
+        }
+      },
+
+      applyWeatherDelaySuggestions: (suggestions) =>
+        set((state) => {
+          const alreadyApplied = new Set(
+            state.delays
+              .filter((delay) => delay.cause === 'weather' && delay.note?.startsWith('[Forecast]'))
+              .map((delay) => delay.taskId)
+          );
+          const additions = suggestions
+            .filter((suggestion) => !alreadyApplied.has(suggestion.taskId))
+            .map((suggestion, index) => ({
+              id: `forecast-weather-${Date.now()}-${index}`,
+              taskId: suggestion.taskId,
+              days: suggestion.days,
+              cause: 'weather' as const,
+              note: `[Forecast] ${suggestion.reason}`,
+              createdAt: new Date().toISOString(),
+            }));
+          return { delays: [...state.delays, ...additions] };
         }),
 
       addComment: (commentData) => {
@@ -162,6 +229,10 @@ export const useProjectStore = create<ProjectState>()(
           contractors: initialContractors,
           delays: initialDelays,
           comments: initialComments,
+          weatherForecast: [],
+          weatherStatus: 'idle',
+          weatherUpdatedAt: null,
+          weatherError: null,
           selectedTaskId: null,
           currentUserRole: 'manager',
         }),

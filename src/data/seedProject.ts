@@ -3,8 +3,11 @@ import type { Project, Task, Delivery, Contractor, DelayEvent, TaskComment } fro
 export const initialProject: Project = {
   name: 'New Apex 5-Storey Hospital Wing',
   startDate: '2026-10-01',
-  targetFinish: 65, // day offset target
+  targetFinish: 90, // day offset target
   statusDay: 12,    // today's day offset
+  location: 'Pune, Maharashtra',
+  latitude: 18.5204,
+  longitude: 73.8567,
 };
 
 export const initialContractors: Contractor[] = [
