@@ -9,6 +9,7 @@ import {
   Radio,
   ArrowLeft,
 } from 'lucide-react';
+import { GlobalSearchBar } from './GlobalSearchBar';
 
 const navItems = [
   { to: '/app', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -105,6 +106,7 @@ export const Layout: React.FC = () => {
             </h1>
           </div>
           <div className="flex items-center gap-3">
+            <GlobalSearchBar />
             <div className="flex items-center gap-2 bg-[#121823] border border-white/10 px-3 py-1.5 rounded-lg text-xs">
               <span className="w-2 h-2 rounded-full bg-[#35d07f]" />
               <span className="text-[#9aa6b8]">Day Offset:</span>
